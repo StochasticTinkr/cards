@@ -1,30 +1,39 @@
-import com.stochastictinkr.skywing.awt.add
+import com.stochastictinkr.cards.standardDeck
 import com.stochastictinkr.skywing.awt.geom.size
 import com.stochastictinkr.skywing.initSkywing
 import com.stochastictinkr.skywing.rendering.geom.component1
 import com.stochastictinkr.skywing.rendering.geom.component2
 import com.stochastictinkr.svg.drawTo
 import com.stochastictinkr.svg.loadSvgGraphicsNode
-import java.awt.Color
 import java.awt.EventQueue.invokeLater
+import java.awt.GridLayout
 import java.awt.image.BufferedImage
 import javax.swing.ImageIcon
 import javax.swing.JFrame
 import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JScrollPane
 
 fun main() {
-    val back = {}.javaClass.classLoader.getResourceAsStream("svg_playing_cards/fronts/clubs_2.svg")!!
-    val node = loadSvgGraphicsNode("abstract", back)
-    val (w, h) = node.bounds.size
-    val image = BufferedImage(w * 2, h * 2, BufferedImage.TYPE_INT_ARGB)
-    node.drawTo(image)
+    val deck = standardDeck(true)
+    val back = {}.javaClass.classLoader.getResourceAsStream("cards/backs/blue.svg")!!
+    val backNode = loadSvgGraphicsNode("card back", back)
     initSkywing()
     invokeLater {
         JFrame().apply {
-            add(component = JLabel(ImageIcon(image))) {
-                background = Color.BLACK
-                isOpaque = true
-            }
+            add(JScrollPane(JPanel(GridLayout(0, 13)).apply {
+                deck.cards.forEach { card ->
+                    val (w, h) = card.image.bounds.size
+                    val image = BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB)
+                    card.image.drawTo(image)
+                    add(JLabel(ImageIcon(image)))
+                }
+                val (w, h) = backNode.bounds.size
+                val image = BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB)
+                backNode.drawTo(image)
+                add(JLabel(ImageIcon(image)))
+
+            }))
             pack()
             setLocationRelativeTo(null)
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE

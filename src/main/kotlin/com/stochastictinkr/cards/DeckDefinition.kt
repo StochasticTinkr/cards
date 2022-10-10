@@ -1,5 +1,8 @@
 package com.stochastictinkr.cards
 
+import org.apache.batik.gvt.GraphicsNode
+import java.awt.image.BufferedImage
+
 data class DeckDefinition(
     val colors: List<Color>,
     val suits: List<Suit>,
@@ -11,6 +14,7 @@ data class DeckDefinition(
         val index: Index?,
         val color: Color? = suit?.color,
         val name: String,
+        val image: GraphicsNode,
     )
 
     data class Color(val name: String)
