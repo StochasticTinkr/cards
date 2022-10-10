@@ -1,10 +1,7 @@
 package com.stochastictinkr.cards
 
-import com.stochastictinkr.svg.drawTo
 import com.stochastictinkr.svg.loadSvgGraphicsNode
 import org.apache.batik.gvt.GraphicsNode
-import org.apache.batik.gvt.RootGraphicsNode
-import java.awt.image.BufferedImage
 import java.io.FileNotFoundException
 
 fun standardDeck(includeJokers: Boolean = false): DeckDefinition {
@@ -45,10 +42,10 @@ fun standardDeck(includeJokers: Boolean = false): DeckDefinition {
         }
     }.toList()
 
-    return DeckDefinition(colors, suits, indexes, cards)
+    return DeckDefinition(colors, suits, indexes, cards, createImagePainter("cards/backs/abstract.svg"))
 }
 
-private fun createImagePainter(filename: String): GraphicsNode {
-    val resource = {}.javaClass.classLoader.getResource(filename) ?: throw FileNotFoundException(filename)
+fun createImagePainter(resourceName: String): GraphicsNode {
+    val resource = {}.javaClass.classLoader.getResource(resourceName) ?: throw FileNotFoundException(resourceName)
     return loadSvgGraphicsNode(resource.toExternalForm(), resource.openStream())
 }

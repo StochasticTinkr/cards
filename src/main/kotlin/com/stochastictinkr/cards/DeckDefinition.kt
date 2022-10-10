@@ -8,6 +8,7 @@ data class DeckDefinition(
     val suits: List<Suit>,
     val indices: List<Index>,
     val cards: List<Card>,
+    val backImage: GraphicsNode
 ) {
     data class Card(
         val suit: Suit?,
