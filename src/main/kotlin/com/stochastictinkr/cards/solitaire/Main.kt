@@ -14,7 +14,7 @@ fun main() {
     initSkywing()
     invokeLater {
         val jFrame = JFrame("Solitaire")
-        val solitaireModel = SolitaireModel(standardDeck())
+        val solitaireModel = SolitaireModel()
         solitaireModel.newGame()
 
         val solitaireComponent = SolitaireComponent(solitaireModel)

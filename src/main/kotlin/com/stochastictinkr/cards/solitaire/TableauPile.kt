@@ -1,6 +1,8 @@
 package com.stochastictinkr.cards.solitaire
 
-private const val KING_RANK = 13
+import com.stochastictinkr.cards.standard.Card
+import com.stochastictinkr.cards.standard.CardRank
+
 
 class TableauPile {
     val visibleCards = mutableListOf<Card>()
@@ -8,10 +10,11 @@ class TableauPile {
     val isEmpty get() = visibleCards.isEmpty() && hiddenCards.isEmpty()
 
     fun canAdd(card: Card): Boolean {
+        val (_, rank, color) = card
         return when {
-            isEmpty -> card.rank == KING_RANK
-            else -> visibleCards.last().let { lastCard ->
-                lastCard.color != card.color && lastCard.rank + 1 == card.rank
+            isEmpty -> rank == CardRank.KING
+            else -> visibleCards.last().let { (_, topRank, topColor) ->
+                topColor != color && topRank.isJustBefore(rank)
             }
         }
     }
@@ -24,6 +27,7 @@ class TableauPile {
     fun addVisibleCard(card: Card) {
         visibleCards.add(card)
     }
+
     fun addHiddenCard(card: Card) {
         hiddenCards.add(card)
     }

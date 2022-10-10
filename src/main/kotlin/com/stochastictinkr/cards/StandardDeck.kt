@@ -1,9 +1,5 @@
 package com.stochastictinkr.cards
 
-import com.stochastictinkr.svg.loadSvgGraphicsNode
-import org.apache.batik.gvt.GraphicsNode
-import java.io.FileNotFoundException
-
 fun standardDeck(includeJokers: Boolean = false): DeckDefinition {
     val red = DeckDefinition.Color("red")
     val black = DeckDefinition.Color("black")
@@ -23,8 +19,7 @@ fun standardDeck(includeJokers: Boolean = false): DeckDefinition {
             indexes.forEach { index ->
                 yield(
                     DeckDefinition.Card(
-                        suit, index, suit.color, "${index.name} of ${suit.name}",
-                        createImagePainter("cards/fronts/${suit.name}_${index.name}.svg")
+                        suit, index, suit.color, "${index.name} of ${suit.name}"
                     )
                 )
             }
@@ -34,18 +29,12 @@ fun standardDeck(includeJokers: Boolean = false): DeckDefinition {
             colors.forEach { color ->
                 yield(
                     DeckDefinition.Card(
-                        suit = null, jokerIndex, color, "${color.name} ${jokerIndex.name}",
-                        createImagePainter("cards/fronts/${jokerIndex.name}_${color.name}.svg")
+                        suit = null, jokerIndex, color, "${color.name} ${jokerIndex.name}"
                     )
                 )
             }
         }
     }.toList()
 
-    return DeckDefinition(colors, suits, indexes, cards, createImagePainter("cards/backs/abstract.svg"))
-}
-
-fun createImagePainter(resourceName: String): GraphicsNode {
-    val resource = {}.javaClass.classLoader.getResource(resourceName) ?: throw FileNotFoundException(resourceName)
-    return loadSvgGraphicsNode(resource.toExternalForm(), resource.openStream())
+    return DeckDefinition(colors, suits, indexes, cards)
 }

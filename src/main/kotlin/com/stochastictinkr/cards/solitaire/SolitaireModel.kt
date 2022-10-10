@@ -1,20 +1,20 @@
 package com.stochastictinkr.cards.solitaire
 
-import com.stochastictinkr.cards.DeckDefinition
+import com.stochastictinkr.cards.standard.CardSuit
+import com.stochastictinkr.cards.standard.StandardDeck
 import kotlin.random.Random
 
-class SolitaireModel(val deck: DeckDefinition) {
+class SolitaireModel() {
     var random = Random(System.nanoTime())
-    val allCards = deck.cards.map { Card(it, deck.indices.indexOf(it.index) + 1) }
     var isGameActive = false
-    val foundations = Array(4) { FoundationPile(deck.suits[it]) }
+    val foundations = CardSuit.values().map { FoundationPile(it) }
     val stock = StockPile()
-    val tableauPiles = Array(7) { TableauPile() }
+    val tableauPiles = List(7) { TableauPile() }
     val wastePile = WastePile()
 
     fun newGame() {
         foundations.forEach { it.clear() }
-        stock.cards.addAll(allCards.shuffled(random))
+        stock.cards.addAll(StandardDeck.cards.shuffled(random))
         tableauPiles.forEach { it.clear() }
         for (i in 0 until 7) {
             tableauPiles[i].addVisibleCard(stock.removeTop())

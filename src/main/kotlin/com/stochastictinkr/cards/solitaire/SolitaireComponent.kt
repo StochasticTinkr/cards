@@ -1,95 +1,82 @@
 package com.stochastictinkr.cards.solitaire
 
-import com.stochastictinkr.cards.DeckDefinition
-import com.stochastictinkr.skywing.awt.geom.size
+import com.stochastictinkr.cards.CardBacks
+import com.stochastictinkr.cards.CardImages
+import com.stochastictinkr.skywing.awt.geom.point
+import com.stochastictinkr.skywing.awt.geom.roundRectangle
 import com.stochastictinkr.skywing.awt.hints
-import com.stochastictinkr.skywing.rendering.geom.component1
-import com.stochastictinkr.skywing.rendering.geom.component2
-import org.apache.batik.gvt.GraphicsNode
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
-import java.awt.Rectangle
-import java.awt.geom.Dimension2D
+import java.awt.Point
 import javax.swing.JComponent
-import kotlin.math.ceil
-
-private val Dimension2D.aspectRatio get() = width / height
-private val DeckDefinition.cardSize get() = cards.first().image.bounds.size
 
 
 class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
-    val foundationMargin = 11
-    val tableauMargin = 6
-    val foundationY = 4
-    val tableauY: Int get() = foundationY + cardHeight + foundationMargin + tableauMargin
-    val cardAspect: Double get() = solitaireModel.deck.cardSize.aspectRatio
-    val cardWidth: Int get() = width / 9
-    val cardHeight: Int get() = ceil(cardWidth / cardAspect).toInt()
-    val tableauHiddenCardFanHeight get() = cardHeight / 32
-    val tableauVisibleCardFanHeight get() = cardHeight / 8
-    val stockFanHeight get() = cardHeight / 64
+    var cardBack = CardBacks.BLUE
+    val images = CardImages()
+    val foundationMargin = 15
+    val tableauMargin = 12
+    val foundationY = 15
+    val tableauY: Int get() = foundationY + images.cardHeight + foundationMargin + tableauMargin
+    val tableauHiddenCardFanHeight get() = images.cardHeight / 8
+    val tableauVisibleCardFanHeight get() = images.cardHeight / 15
+    val stockFanHeight get() = -images.cardHeight / 90
 
     override fun paintComponent(g: Graphics) {
+        images.cardWidth = width / 11
+        val cardWidth = images.cardWidth
+        val cardHeight = images.cardHeight
         require(g is Graphics2D)
         g.hints {
             renderingQuality()
             antialiasingOn()
         }
-        g.color = Color.GREEN.darker()
+        g.color = Color(70, 120, 80)
         g.fillRect(0, 0, width, height)
         solitaireModel.foundations.forEachIndexed { index, pile ->
-            g.color = Color.BLACK
-            val position = Rectangle(15 + (cardWidth + foundationMargin) * index, foundationY, cardWidth, cardHeight)
-            g.draw(position)
+            val position = point(15 + (cardWidth + foundationMargin) * index, foundationY)
+            drawPlacementOutline(g, position, cardWidth, cardHeight)
             pile.cards.lastOrNull()?.let { visibleCard ->
-                g.drawImage(position, visibleCard.image)
+                g.drawImage(images[visibleCard], position.x, position.y, null)
             }
         }
 
         solitaireModel.tableauPiles.forEachIndexed { index, pile ->
-            val position = Rectangle(8 + (cardWidth + tableauMargin) * index, tableauY, cardWidth, cardHeight)
-            g.color = Color.BLACK
-            g.draw(position)
+            val position = point(8 + (cardWidth + tableauMargin) * index, tableauY)
+            drawPlacementOutline(g, position, cardWidth, cardHeight)
             pile.hiddenCards.forEach {
-                g.drawImage(position, solitaireModel.deck.backImage)
+                g.drawImage(images[cardBack], position.x, position.y, null)
                 position.y += tableauHiddenCardFanHeight
             }
             pile.visibleCards.forEach {
-                g.drawImage(position, it.image)
+                g.drawImage(images[it], position.x, position.y, null)
                 position.y += tableauVisibleCardFanHeight
             }
         }
 
         run {
-            val position = Rectangle(width - cardWidth - 8, tableauY, cardWidth, cardHeight)
-            g.color = Color.BLACK
-            g.draw(position)
+            val position = point(width - cardWidth * 2 - 8, tableauY)
+            drawPlacementOutline(g, position, cardWidth, cardHeight)
             repeat(solitaireModel.stock.cards.size) {
-                g.drawImage(position, solitaireModel.deck.backImage)
+                g.drawImage(images[cardBack], position.x, position.y, null)
                 position.y += stockFanHeight
             }
         }
 
         run {
-            val position = Rectangle(width - cardWidth - 8, tableauY + cardHeight + 10, cardWidth, cardHeight)
-            g.color = Color.BLACK
-            g.draw(position)
+            val position = point(width - cardWidth * 2 - 8, tableauY + cardHeight + 10)
+            drawPlacementOutline(g, position, cardWidth, cardHeight)
             solitaireModel.wastePile.cards.lastOrNull()?.let {
-                g.drawImage(position, it.image)
+                g.drawImage(images[it], position.x, position.y, null)
             }
         }
     }
 
-    private fun Graphics2D.drawImage(position: Rectangle, image: GraphicsNode) {
-        val g = create(position.x, position.y, position.width, position.height) as Graphics2D
-        try {
-            val (w, h) = image.bounds.size
-            g.scale(1/(w.toDouble() / position.width), 1/(h / position.height.toDouble()))
-            image.renderingHints?.let(g::setRenderingHints)
-            image.paint(g)
-        } finally {
-            g.dispose()
-        }
+    private fun drawPlacementOutline(g: Graphics2D, position: Point, cardWidth: Int, cardHeight: Int) {
+        g.color = Color.BLACK
+        g.draw(roundRectangle {
+            setRoundRect(position.x - 2.0, position.y - 2.0, cardWidth + 4.0, cardHeight + 4.0, 4.0, 4.0)
+        })
     }
 }
