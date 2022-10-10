@@ -9,11 +9,14 @@ version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-scripting-jvm")
-    implementation("org.jetbrains.kotlin:kotlin-scripting-jvm-host")
+    implementation("com.stochastictinkr:skywing:1.0-SNAPSHOT")
+    sourceArtifacts("com.stochastictinkr:skywing:1.0-SNAPSHOT")
+    implementation("org.apache.xmlgraphics:batik-dom:1.15")
+    implementation("org.apache.xmlgraphics:batik-swing:1.15")
     testImplementation(kotlin("test"))
 }
 
@@ -22,5 +25,5 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "17"
 }
