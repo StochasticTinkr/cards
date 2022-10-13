@@ -2,6 +2,7 @@ package com.stochastictinkr.cards.solitaire
 
 import com.stochastictinkr.cards.CardBacks
 import com.stochastictinkr.cards.CardImages
+import com.stochastictinkr.cards.standard.Card
 import com.stochastictinkr.skywing.awt.geom.point
 import com.stochastictinkr.skywing.awt.geom.roundRectangle
 import com.stochastictinkr.skywing.awt.hints
@@ -9,6 +10,8 @@ import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Point
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.JComponent
 
 
@@ -23,10 +26,25 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
     val tableauVisibleCardFanHeight get() = images.cardHeight / 15
     val stockFanHeight get() = -images.cardHeight / 90
 
+    init {
+        addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                if (solitaireModel.selectedCards.isEmpty()) {
+                    selectCardAt(e.point)
+                } else {
+                    dropCardAt(e.point)
+                }
+            }
+        })
+    }
+
+    private fun selectCardAt(point: Point) {
+    }
+
+    private fun dropCardAt(point: Point) {
+    }
+
     override fun paintComponent(g: Graphics) {
-        images.cardWidth = width / 11
-        val cardWidth = images.cardWidth
-        val cardHeight = images.cardHeight
         require(g is Graphics2D)
         g.hints {
             renderingQuality()
@@ -34,42 +52,126 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         }
         g.color = Color(70, 120, 80)
         g.fillRect(0, 0, width, height)
+
+        visitAll(object : CardsVisitor {
+            override fun otherPosition(position: Point, width: Int, height: Int) {
+                drawPlacementOutline(g, position, width, height)
+
+            }
+
+            override fun otherVisibleCard(card: Card, position: Point, width: Int, height: Int) {
+                g.drawImage(images[card], position.x, position.y, null)
+
+            }
+
+            override fun otherHiddenCard(position: Point, width: Int, height: Int) {
+                g.drawImage(images[cardBack], position.x, position.y, null)
+            }
+        })
+    }
+
+    private fun visitAll(cardsVisitor: CardsVisitor) {
+        images.cardWidth = width / 11
+        val cardWidth = images.cardWidth
+        val cardHeight = images.cardHeight
         solitaireModel.foundations.forEachIndexed { index, pile ->
             val position = point(15 + (cardWidth + foundationMargin) * index, foundationY)
-            drawPlacementOutline(g, position, cardWidth, cardHeight)
+            cardsVisitor.foundationPosition(position, cardWidth, cardHeight, pile, index)
             pile.cards.lastOrNull()?.let { visibleCard ->
-                g.drawImage(images[visibleCard], position.x, position.y, null)
+                cardsVisitor.foundationCard(visibleCard, position, cardWidth, cardHeight, pile, index)
             }
         }
 
         solitaireModel.tableauPiles.forEachIndexed { index, pile ->
             val position = point(8 + (cardWidth + tableauMargin) * index, tableauY)
-            drawPlacementOutline(g, position, cardWidth, cardHeight)
+            cardsVisitor.tableauPosition(position, cardWidth, cardHeight, pile, index)
             pile.hiddenCards.forEach {
-                g.drawImage(images[cardBack], position.x, position.y, null)
+                cardsVisitor.hiddenTableauCard(position, cardWidth, cardHeight, pile, index)
                 position.y += tableauHiddenCardFanHeight
             }
-            pile.visibleCards.forEach {
-                g.drawImage(images[it], position.x, position.y, null)
+            pile.visibleCards.forEach { card ->
+                cardsVisitor.visibleTableauCard(card, position, cardWidth, cardHeight, pile, index)
                 position.y += tableauVisibleCardFanHeight
             }
         }
 
         run {
             val position = point(width - cardWidth * 2 - 8, tableauY)
-            drawPlacementOutline(g, position, cardWidth, cardHeight)
+            cardsVisitor.stockPosition(position, cardWidth, cardHeight)
             repeat(solitaireModel.stock.cards.size) {
-                g.drawImage(images[cardBack], position.x, position.y, null)
+                cardsVisitor.stockCard(position, cardWidth, cardHeight)
                 position.y += stockFanHeight
             }
         }
 
         run {
             val position = point(width - cardWidth * 2 - 8, tableauY + cardHeight + 10)
-            drawPlacementOutline(g, position, cardWidth, cardHeight)
-            solitaireModel.wastePile.cards.lastOrNull()?.let {
-                g.drawImage(images[it], position.x, position.y, null)
+            cardsVisitor.wastePosition(position, cardWidth, cardHeight)
+            solitaireModel.wastePile.cards.lastOrNull()?.let { card ->
+                cardsVisitor.wasteCard(card, position, cardWidth, cardHeight)
             }
+        }
+    }
+
+    private interface CardsVisitor {
+        fun otherPosition(position: Point, width: Int, height: Int) {}
+        fun otherVisibleCard(card: Card, position: Point, width: Int, height: Int) {}
+        fun otherHiddenCard(position: Point, width: Int, height: Int) {}
+
+        fun foundationPosition(position: Point, width: Int, height: Int, foundationPile: FoundationPile, index: Int) {
+            otherPosition(position, width, height)
+        }
+
+        fun tableauPosition(position: Point, width: Int, height: Int, tableauPile: TableauPile, index: Int) {
+            otherPosition(position, width, height)
+        }
+
+        fun stockPosition(position: Point, width: Int, height: Int) {
+            otherPosition(position, width, height)
+        }
+
+        fun wastePosition(position: Point, width: Int, height: Int) {
+            otherPosition(position, width, height)
+        }
+
+        fun foundationCard(
+            card: Card,
+            position: Point,
+            width: Int,
+            height: Int,
+            foundationPile: FoundationPile,
+            index: Int,
+        ) {
+            otherVisibleCard(card, position, width, height)
+        }
+
+        fun visibleTableauCard(
+            card: Card,
+            position: Point,
+            width: Int,
+            height: Int,
+            tableauPile: TableauPile,
+            index: Int,
+        ) {
+            otherVisibleCard(card, position, width, height)
+        }
+
+        fun hiddenTableauCard(
+            position: Point,
+            width: Int,
+            height: Int,
+            tableauPile: TableauPile,
+            index: Int,
+        ) {
+            otherHiddenCard(position, width, height)
+        }
+
+        fun stockCard(position: Point, width: Int, height: Int) {
+            otherHiddenCard(position, width, height)
+        }
+
+        fun wasteCard(card: Card, position: Point, width: Int, height: Int) {
+            otherVisibleCard(card, position, width, height)
         }
     }
 

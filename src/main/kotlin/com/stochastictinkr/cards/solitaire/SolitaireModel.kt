@@ -1,5 +1,6 @@
 package com.stochastictinkr.cards.solitaire
 
+import com.stochastictinkr.cards.standard.Card
 import com.stochastictinkr.cards.standard.CardSuit
 import com.stochastictinkr.cards.standard.StandardDeck
 import kotlin.random.Random
@@ -11,6 +12,8 @@ class SolitaireModel() {
     val stock = StockPile()
     val tableauPiles = List(7) { TableauPile() }
     val wastePile = WastePile()
+
+    val selectedCards = mutableListOf<Card>()
 
     fun newGame() {
         foundations.forEach { it.clear() }
