@@ -59,8 +59,8 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
 
             }
 
-            override fun otherVisibleCard(card: Card, position: Point, width: Int, height: Int) {
-                g.drawImage(images[card], position.x, position.y, null)
+            override fun otherVisibleCard(card: CardModel, position: Point, width: Int, height: Int) {
+                g.drawImage(images[card.card], position.x, position.y, null)
 
             }
 
@@ -115,7 +115,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
 
     private interface CardsVisitor {
         fun otherPosition(position: Point, width: Int, height: Int) {}
-        fun otherVisibleCard(card: Card, position: Point, width: Int, height: Int) {}
+        fun otherVisibleCard(card: CardModel, position: Point, width: Int, height: Int) {}
         fun otherHiddenCard(position: Point, width: Int, height: Int) {}
 
         fun foundationPosition(position: Point, width: Int, height: Int, foundationPile: FoundationPile, index: Int) {
@@ -135,7 +135,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         }
 
         fun foundationCard(
-            card: Card,
+            card: CardModel,
             position: Point,
             width: Int,
             height: Int,
@@ -146,7 +146,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         }
 
         fun visibleTableauCard(
-            card: Card,
+            card: CardModel,
             position: Point,
             width: Int,
             height: Int,
@@ -170,7 +170,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
             otherHiddenCard(position, width, height)
         }
 
-        fun wasteCard(card: Card, position: Point, width: Int, height: Int) {
+        fun wasteCard(card: CardModel, position: Point, width: Int, height: Int) {
             otherVisibleCard(card, position, width, height)
         }
     }

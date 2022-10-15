@@ -5,11 +5,11 @@ import com.stochastictinkr.cards.standard.CardRank
 
 
 class TableauPile {
-    val visibleCards = mutableListOf<Card>()
-    val hiddenCards = mutableListOf<Card>()
+    val visibleCards = mutableListOf<CardModel>()
+    val hiddenCards = mutableListOf<CardModel>()
     val isEmpty get() = visibleCards.isEmpty() && hiddenCards.isEmpty()
 
-    fun canAdd(card: Card): Boolean {
+    fun canAdd(card: CardModel): Boolean {
         val (_, rank, color) = card
         return when {
             isEmpty -> rank == CardRank.KING
@@ -24,11 +24,11 @@ class TableauPile {
         hiddenCards.clear()
     }
 
-    fun addVisibleCard(card: Card) {
+    fun addVisibleCard(card: CardModel) {
         visibleCards.add(card)
     }
 
-    fun addHiddenCard(card: Card) {
+    fun addHiddenCard(card: CardModel) {
         hiddenCards.add(card)
     }
 

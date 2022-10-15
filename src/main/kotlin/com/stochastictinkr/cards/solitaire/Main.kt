@@ -1,6 +1,5 @@
 package com.stochastictinkr.cards.solitaire
 
-import com.stochastictinkr.cards.standardDeck
 import com.stochastictinkr.skywing.initSkywing
 import com.stochastictinkr.skywing.swing.action
 import com.stochastictinkr.skywing.swing.addItem

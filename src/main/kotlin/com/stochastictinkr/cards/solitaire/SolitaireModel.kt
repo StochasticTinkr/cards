@@ -17,7 +17,7 @@ class SolitaireModel() {
 
     fun newGame() {
         foundations.forEach { it.clear() }
-        stock.cards.addAll(StandardDeck.cards.shuffled(random))
+        stock.cards.addAll(StandardDeck.cards.shuffled(random).map { CardModel(it) })
         tableauPiles.forEach { it.clear() }
         for (i in 0 until 7) {
             tableauPiles[i].addVisibleCard(stock.removeTop())
