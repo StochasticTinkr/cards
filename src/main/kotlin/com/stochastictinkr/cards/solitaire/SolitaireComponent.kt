@@ -19,59 +19,134 @@ import javax.swing.SwingUtilities
 
 
 class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
-    var cardBack = CardBacks.BLUE
-    val images = CardImages()
-    val foundationMargin = 15
-    val tableauMargin = 12
-    val foundationY = 15
-    val tableauY: Int get() = foundationY + images.cardHeight + foundationMargin + tableauMargin
-    val tableauHiddenCardFanHeight get() = images.cardHeight / 8
-    val tableauVisibleCardFanHeight get() = images.cardHeight / 15
-    val stockFanHeight get() = -images.cardHeight / 90
+    private var cardBack = CardBacks.BLUE
+    private val images = CardImages()
+    private val foundationMargin = 15
+    private val tableauMargin = 12
+    private val foundationY = 15
+    private val tableauY: Int get() = foundationY + images.cardHeight + foundationMargin + tableauMargin
+    private val tableauHiddenCardFanHeight get() = images.cardHeight / 15
+    private val tableauVisibleCardFanHeight get() = images.cardHeight / 8
+    private val stockFanHeight get() = -images.cardHeight / 90
 
-    init {
-        addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                if (!SwingUtilities.isLeftMouseButton(e)) {
-                    println("Not left button pressed")
+    val selectCards = mutableListOf<Card>()
+    var sourceContainer: CardContainer? = null
+
+    private val mouseListener = object : MouseAdapter() {
+        override fun mouseClicked(e: MouseEvent) {
+            if (!SwingUtilities.isLeftMouseButton(e)) {
+                return
+            }
+            if (e.clickCount == 2) {
+                withCardAt(e.point) { container, card ->
+                    val availableCards = container.availableFrom(card)
+                    if (availableCards.isNotEmpty()) {
+                        sequenceOf(solitaireModel.foundations, solitaireModel.tableauPiles)
+                            .flatMap { it.asSequence() }
+                            .map { it to it.canReceive(availableCards) }
+                            .firstOrNull { (_, receivable) -> receivable.isNotEmpty() }
+                            ?.let { (target, receivable) ->
+                                target.receive(container.take(receivable))
+                                repaint()
+                            }
+                    }
+                }
+                return
+            }
+            if (e.clickCount == 1) {
+                if (e.point in stockBounds) {
+                    if (solitaireModel.stock.cards.isEmpty()) {
+                        solitaireModel.stock.cards.addAll(solitaireModel.wastePile.cards)
+                        solitaireModel.wastePile.cards.clear()
+                    }
+                    solitaireModel.stock.cards.removeLastOrNull()?.let { solitaireModel.wastePile.add(it) }
+                    repaint()
                     return
                 }
-                println("Left button pressed")
-                if (e.clickCount == 2) {
-                    println("Double Click")
-                    withCardAt(e.point) { container, card ->
-                        println("Clicked on card: ${card.name}")
-                        val availableCards = container.availableFrom(card)
-                        println("can move ${availableCards.size} cards")
-                        if (availableCards.isNotEmpty()) {
-                            sequenceOf(
-                                solitaireModel.foundations,
-                                solitaireModel.tableauPiles
-                            )
-                                .flatMap { it.asSequence() }
-                                .map { it to it.canReceive(availableCards) }
-                                .firstOrNull { (_, receivable) -> receivable.isNotEmpty() }
-                                ?.also { (target, receivable) ->
-                                    println("Moving $receivable to $target")
-                                    target.receive(container.take(receivable))
-                                    repaint()
-                                }.also {
-                                    if (it == null) {
-                                        println("Nothing to move")
-                                    }
-                                }
+                if (selectCards.isNotEmpty() && sourceContainer != null) {
+                    var returns =
+                        withContainerAt(e.point) { container ->
+                            val canReceive = container.canReceive(selectCards)
+                            if (canReceive.isNotEmpty()) {
+                                placeSelected(container, canReceive)
+                                repaint()
+                                true
+                            } else {
+                                false
+                            }
                         }
+                    if (returns == true) {
+                        return
+                    }
+                    withCardAt(e.point) { container, card ->
+                        select(container, card)
+                        repaint()
                     }
                 }
             }
+        }
+    }
 
+    private fun placeSelected(container: CardContainer, canReceive: List<Card>) {
+        selectCards.clear()
+        container.receive(sourceContainer!!.take(canReceive))
+        sourceContainer = null
+    }
+
+    private fun select(container: CardContainer, card: Card) {
+        selectCards.addAll(container.availableFrom(card))
+        sourceContainer = container
+    }
+
+    init {
+        addMouseListener(mouseListener)
+        addMouseMotionListener(mouseListener)
+        addMouseWheelListener(mouseListener)
+    }
+
+    private inline fun <T> withContainerAt(point: Point, function: (CardContainer) -> T): T? {
+        var result: CardContainer? = null
+        visitAll(object : CardsVisitor() {
+            override fun otherPosition(container: CardContainer, position: Point, width: Int, height: Int) {
+                if (point in Rectangle(point, Dimension(width, height))) {
+                    result = container
+                    done()
+                }
+            }
+
+            override fun otherVisibleCard(
+                container: CardContainer,
+                card: Card,
+                position: Point,
+                width: Int,
+                height: Int,
+            ) {
+                if (point in Rectangle(point, Dimension(width, height))) {
+                    result = container
+                    done()
+                }
+            }
+
+            override fun otherHiddenCard(
+                container: CardContainer,
+                card: Card,
+                position: Point,
+                width: Int,
+                height: Int,
+            ) {
+                if (point in Rectangle(point, Dimension(width, height))) {
+                    result = container
+                    done()
+                }
+            }
         })
+        return result?.let(function)
     }
 
     private inline fun <T> withCardAt(point: Point, function: (CardContainer, Card) -> T): T? {
         var highestFound = Int.MAX_VALUE
         var bestFound: Pair<CardContainer, Card>? = null
-        visitAll(object : CardsVisitor {
+        visitAll(object : CardsVisitor() {
             override fun otherVisibleCard(
                 container: CardContainer,
                 card: Card,
@@ -121,8 +196,8 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         g.color = Color(70, 120, 80)
         g.fillRect(0, 0, width, height)
 
-        visitAll(object : CardsVisitor {
-            override fun otherPosition(position: Point, width: Int, height: Int) =
+        visitAll(object : CardsVisitor() {
+            override fun otherPosition(container: CardContainer, position: Point, width: Int, height: Int) =
                 g.drawPlacementOutline(position, width, height)
 
             override fun otherVisibleCard(
@@ -148,8 +223,21 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
     }
 
     private fun Graphics2D.drawCard(card: Card, position: Point) {
-        drawImage(images[card], position.x, position.y, null)
+        val image = images[card]
+        if (selectCards.contains(card)) {
+            paint = Color.YELLOW
+            fillRoundRect(position.x - 1, position.y - 1, image.width + 2, image.height + 2, 5, 5)
+        }
+        drawImage(image, position.x, position.y, null)
     }
+
+    private val stockBounds: Rectangle
+        get() {
+            val movement = stockFanHeight * solitaireModel.stock.cards.size * stockFanHeight
+            val startPoint = stockStartPoint
+            return Rectangle(startPoint.x, startPoint.y + movement, images.cardWidth, images.cardHeight - movement)
+        }
+
 
     private fun visitAll(cardsVisitor: CardsVisitor) {
         images.cardWidth = width / 11
@@ -177,8 +265,8 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         }
 
         run {
-            val position = point(width - cardWidth * 2 - 8, tableauY)
-            cardsVisitor.stockPosition(position, cardWidth, cardHeight)
+            val position = stockStartPoint
+            cardsVisitor.stockPosition(position, cardWidth, cardHeight, solitaireModel.stock)
             solitaireModel.stock.cards.forEach {
                 cardsVisitor.stockCard(it, position, cardWidth, cardHeight, solitaireModel.stock)
                 position.y += stockFanHeight
@@ -187,35 +275,66 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
 
         run {
             val position = point(width - cardWidth * 2 - 8, tableauY + cardHeight + 10)
-            cardsVisitor.wastePosition(position, cardWidth, cardHeight)
+            cardsVisitor.wastePosition(position, cardWidth, cardHeight, solitaireModel.wastePile)
             solitaireModel.wastePile.cards.lastOrNull()?.let { card ->
                 cardsVisitor.wasteCard(card, position, cardWidth, cardHeight, solitaireModel.wastePile)
             }
         }
     }
 
-    private interface CardsVisitor {
-        fun otherPosition(position: Point, width: Int, height: Int) {}
-        fun otherVisibleCard(container: CardContainer, card: Card, position: Point, width: Int, height: Int) {}
-        fun otherHiddenCard(container: CardContainer, card: Card, position: Point, width: Int, height: Int) {}
+    private val stockStartPoint get() = point(width - images.cardWidth * 2 - 8, tableauY)
 
-        fun foundationPosition(position: Point, width: Int, height: Int, foundationPile: FoundationPile, index: Int) {
-            otherPosition(position, width, height)
+    private abstract class CardsVisitor {
+        var shouldContinue = true
+
+        open fun otherPosition(container: CardContainer, position: Point, width: Int, height: Int) {}
+        open fun otherVisibleCard(
+            container: CardContainer,
+            card: Card,
+            position: Point,
+            width: Int,
+            height: Int,
+        ) {
         }
 
-        fun tableauPosition(position: Point, width: Int, height: Int, tableauPile: TableauPile, index: Int) {
-            otherPosition(position, width, height)
+        open fun otherHiddenCard(
+            container: CardContainer,
+            card: Card,
+            position: Point,
+            width: Int,
+            height: Int,
+        ) {
         }
 
-        fun stockPosition(position: Point, width: Int, height: Int) {
-            otherPosition(position, width, height)
+        open fun foundationPosition(
+            position: Point,
+            width: Int,
+            height: Int,
+            foundationPile: FoundationPile,
+            index: Int,
+        ) {
+            otherPosition(foundationPile, position, width, height)
         }
 
-        fun wastePosition(position: Point, width: Int, height: Int) {
-            otherPosition(position, width, height)
+        open fun tableauPosition(
+            position: Point,
+            width: Int,
+            height: Int,
+            tableauPile: TableauPile,
+            index: Int,
+        ) {
+            otherPosition(tableauPile, position, width, height)
         }
 
-        fun foundationCard(
+        open fun stockPosition(position: Point, width: Int, height: Int, stockPile: StockPile) {
+            otherPosition(stockPile, position, width, height)
+        }
+
+        open fun wastePosition(position: Point, width: Int, height: Int, wastePile: WastePile) {
+            otherPosition(wastePile, position, width, height)
+        }
+
+        open fun foundationCard(
             card: Card,
             position: Point,
             width: Int,
@@ -226,7 +345,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
             otherVisibleCard(foundationPile, card, position, width, height)
         }
 
-        fun visibleTableauCard(
+        open fun visibleTableauCard(
             card: Card,
             position: Point,
             width: Int,
@@ -237,7 +356,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
             otherVisibleCard(tableauPile, card, position, width, height)
         }
 
-        fun hiddenTableauCard(
+        open fun hiddenTableauCard(
             card: Card,
             position: Point,
             width: Int,
@@ -248,12 +367,16 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
             otherHiddenCard(tableauPile, card, position, width, height)
         }
 
-        fun stockCard(card: Card, position: Point, width: Int, height: Int, stock: StockPile) {
+        open fun stockCard(card: Card, position: Point, width: Int, height: Int, stock: StockPile) {
             otherHiddenCard(stock, card, position, width, height)
         }
 
-        fun wasteCard(card: Card, position: Point, width: Int, height: Int, wastePile: WastePile) {
+        open fun wasteCard(card: Card, position: Point, width: Int, height: Int, wastePile: WastePile) {
             otherVisibleCard(wastePile, card, position, width, height)
+        }
+
+        fun done() {
+            shouldContinue = false
         }
     }
 

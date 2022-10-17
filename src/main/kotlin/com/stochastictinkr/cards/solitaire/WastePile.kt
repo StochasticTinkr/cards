@@ -12,7 +12,7 @@ class WastePile : CardContainer {
         if (cards.lastOrNull() == card) listOf(card) else emptyList()
 
     override fun take(cards: List<Card>): List<Card> {
-        if (cards.size > 1 || cards.first() != this.cards.firstOrNull())
+        if (cards.size > 1 || cards.first() != this.cards.lastOrNull())
             throw IllegalArgumentException()
         this.cards.removeLast()
         return cards

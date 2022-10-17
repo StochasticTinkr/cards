@@ -9,12 +9,12 @@ class TableauPile : CardContainer {
     val hiddenCards = mutableListOf<Card>()
     val isEmpty get() = visibleCards.isEmpty() && hiddenCards.isEmpty()
 
-    fun canAdd(card: Card): Boolean {
+    private fun canAdd(card: Card): Boolean {
         val (_, rank, color) = card
         return when {
             isEmpty -> rank == CardRank.KING
             else -> visibleCards.last().let { (_, topRank, topColor) ->
-                topColor != color && topRank.isJustBefore(rank)
+                topColor != color && topRank.isJustAfter(rank)
             }
         }
     }
