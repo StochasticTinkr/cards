@@ -42,7 +42,9 @@ class TableauPile : CardContainer {
     override fun take(cards: List<Card>): List<Card> {
         if (visibleCards.size < cards.size ||
             visibleCards.subList(visibleCards.size - cards.size, visibleCards.size) != cards
-        ) throw IllegalArgumentException()
+        ){
+            throw IllegalArgumentException()
+        }
         if (visibleCards.size == cards.size) {
             visibleCards.clear()
             hiddenCards.removeLastOrNull()?.let { visibleCards.add(it) }

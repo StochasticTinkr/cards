@@ -5,7 +5,7 @@ import com.stochastictinkr.cards.standard.CardSuit
 import com.stochastictinkr.cards.standard.StandardDeck
 import kotlin.random.Random
 
-class SolitaireModel() {
+class SolitaireModel {
     var random = Random(System.nanoTime())
     var isGameActive = false
     val foundations = CardSuit.values().map { FoundationPile(it) }
@@ -29,6 +29,7 @@ class SolitaireModel() {
             }
         }
         wastePile.add(stock.removeTop())
+        clearSelection()
         isGameActive = true
     }
 
@@ -42,6 +43,10 @@ class SolitaireModel() {
     }
 
     fun moveSelectedCardsTo(container: CardContainer): Boolean {
+        if (container == sourceContainer) {
+            clearSelection()
+            return false
+        }
         val canReceive = container.canReceive(selectCards)
         if (canReceive.isEmpty()) {
             return false
@@ -58,8 +63,12 @@ class SolitaireModel() {
     }
 
     private fun placeSelected(container: CardContainer, canReceive: List<Card>) {
-        selectCards.clear()
         container.receive(sourceContainer!!.take(canReceive))
+        clearSelection()
+    }
+
+    private fun clearSelection() {
+        selectCards.clear()
         sourceContainer = null
     }
 
@@ -69,6 +78,7 @@ class SolitaireModel() {
         container: CardContainer,
         card: Card,
     ): Boolean {
+        clearSelection()
         val availableCards = container.availableFrom(card)
         return if (availableCards.isNotEmpty()) {
             sequenceOf(foundations, tableauPiles)
@@ -79,6 +89,7 @@ class SolitaireModel() {
                     target.receive(container.take(receivable))
                     true
                 } == true
+
         } else {
             false
         }

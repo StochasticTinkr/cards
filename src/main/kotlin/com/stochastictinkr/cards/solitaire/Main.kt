@@ -19,14 +19,15 @@ fun main() {
         val solitaireComponent = SolitaireComponent(solitaireModel)
         val newGame = action(name = "Name Game", actionCommand = "New Game") {
             solitaireModel.newGame()
+            solitaireComponent.repaint()
         }
-        val quit = action(name = "quit") {
+        val quit = action(name = "Quit") {
             jFrame.dispose()
         }
         with(jFrame) {
             menuBar {
                 addMenu {
-                    name = "Game"
+                    text = "Game"
                     addItem(newGame)
                     addSeparator()
                     addItem(quit)
