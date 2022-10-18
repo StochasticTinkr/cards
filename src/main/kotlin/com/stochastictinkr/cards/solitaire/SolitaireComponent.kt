@@ -36,7 +36,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
                 return
             }
             if (e.clickCount == 2) {
-                val success = withCardAt(e.point) { container, card ->
+                val success = withSourcedCardAt(e.point) { container, card ->
                     solitaireModel.autoMoveCard(container, card)
                 }
                 if (success == true) {
@@ -51,13 +51,13 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
                     return
                 }
                 if (solitaireModel.hasSelection) {
-                    val success = withContainerAt(e.point, solitaireModel::moveSelectedCardsTo)
+                    val success = withReceiverAt(e.point) { solitaireModel.moveSelectedCardsTo(it) }
                     if (success == true) {
                         repaint()
                         return
                     }
                 }
-                withCardAt(e.point) { container, card ->
+                withSourcedCardAt(e.point) { container, card ->
                     solitaireModel.select(container, card)
                     repaint()
                 }
@@ -72,38 +72,31 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         addMouseWheelListener(mouseListener)
     }
 
-    private inline fun <T> withContainerAt(point: Point, function: (CardContainer) -> T): T? {
-        var result: CardContainer? = null
+    private inline fun <T> withReceiverAt(point: Point, function: (CardReceiver) -> T): T? {
+        var result: CardReceiver? = null
         visitAll(object : CardsVisitor() {
-            override fun otherPosition(container: CardContainer, position: Point, width: Int, height: Int) {
+            override fun foundationPosition(
+                position: Point,
+                width: Int,
+                height: Int,
+                foundationPile: FoundationPile,
+                index: Int,
+            ) {
                 if (point in Rectangle(position, Dimension(width, height))) {
-                    result = container
+                    result = foundationPile
                     done()
                 }
             }
 
-            override fun otherVisibleCard(
-                container: CardContainer,
-                card: Card,
+            override fun tableauPosition(
                 position: Point,
                 width: Int,
                 height: Int,
+                tableauPile: TableauPile,
+                index: Int,
             ) {
                 if (point in Rectangle(position, Dimension(width, height))) {
-                    result = container
-                    done()
-                }
-            }
-
-            override fun otherHiddenCard(
-                container: CardContainer,
-                card: Card,
-                position: Point,
-                width: Int,
-                height: Int,
-            ) {
-                if (point in Rectangle(position, Dimension(width, height))) {
-                    result = container
+                    result = tableauPile
                     done()
                 }
             }
@@ -111,35 +104,30 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         return result?.let(function)
     }
 
-    private inline fun <T> withCardAt(point: Point, function: (CardContainer, Card) -> T): T? {
+    private inline fun <T> withSourcedCardAt(point: Point, function: (CardSource, Card) -> T): T? {
         var highestFound = Int.MAX_VALUE
-        var bestFound: Pair<CardContainer, Card>? = null
+        var bestFound: Pair<CardSource, Card>? = null
         visitAll(object : CardsVisitor() {
-            override fun otherVisibleCard(
-                container: CardContainer,
+            override fun visibleTableauCard(
                 card: Card,
                 position: Point,
                 width: Int,
                 height: Int,
+                tableauPile: TableauPile,
+                index: Int,
             ) {
                 if (Rectangle(position, Dimension(width, height)).contains(point)) {
                     if (bestFound == null || highestFound < position.y) {
-                        bestFound = container to card
+                        bestFound = tableauPile to card
                         highestFound = position.y
                     }
                 }
             }
 
-            override fun otherHiddenCard(
-                container: CardContainer,
-                card: Card,
-                position: Point,
-                width: Int,
-                height: Int,
-            ) {
+            override fun wasteCard(card: Card, position: Point, width: Int, height: Int, wastePile: WastePile) {
                 if (Rectangle(position, Dimension(width, height)).contains(point)) {
                     if (bestFound == null || highestFound < position.y) {
-                        bestFound = container to card
+                        bestFound = wastePile to card
                         highestFound = position.y
                     }
                 }
@@ -161,11 +149,11 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         g.fillRect(0, 0, width, height)
 
         visitAll(object : CardsVisitor() {
-            override fun otherPosition(container: CardContainer, position: Point, width: Int, height: Int) =
+            override fun otherPosition(container: CardLocation, position: Point, width: Int, height: Int) =
                 g.drawPlacementOutline(position, width, height)
 
             override fun otherVisibleCard(
-                container: CardContainer,
+                container: CardLocation,
                 card: Card,
                 position: Point,
                 width: Int,
@@ -173,7 +161,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
             ) = g.drawCard(card, position)
 
             override fun otherHiddenCard(
-                container: CardContainer,
+                container: CardLocation,
                 card: Card,
                 position: Point,
                 width: Int,
@@ -197,7 +185,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
 
     private val stockBounds: Rectangle
         get() {
-            val movement = stockFanHeight * solitaireModel.stock.cards.size
+            val movement = stockFanHeight * solitaireModel.numberOfCardsInStock
             val startPoint = stockStartPoint
             return Rectangle(startPoint.x, startPoint.y + movement, images.cardWidth, images.cardHeight - movement)
         }
@@ -210,7 +198,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         solitaireModel.foundations.forEachIndexed { index, pile ->
             val position = point(15 + (cardWidth + foundationMargin) * index, foundationY)
             cardsVisitor.foundationPosition(position, cardWidth, cardHeight, pile, index)
-            pile.cards.lastOrNull()?.let { visibleCard ->
+            pile.onVisibleCard { visibleCard ->
                 cardsVisitor.foundationCard(visibleCard, position, cardWidth, cardHeight, pile, index)
             }
         }
@@ -218,11 +206,11 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         solitaireModel.tableauPiles.forEachIndexed { index, pile ->
             val position = point(8 + (cardWidth + tableauMargin) * index, tableauY)
             cardsVisitor.tableauPosition(position, cardWidth, cardHeight, pile, index)
-            pile.hiddenCards.forEach {
+            pile.forEachHiddenCard {
                 cardsVisitor.hiddenTableauCard(it, position, cardWidth, cardHeight, pile, index)
                 position.y += tableauHiddenCardFanHeight
             }
-            pile.visibleCards.forEach { card ->
+            pile.forEachVisibleCard { card ->
                 cardsVisitor.visibleTableauCard(card, position, cardWidth, cardHeight, pile, index)
                 position.y += tableauVisibleCardFanHeight
             }
@@ -231,8 +219,8 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         run {
             val position = stockStartPoint
             cardsVisitor.stockPosition(position, cardWidth, cardHeight, solitaireModel.stock)
-            solitaireModel.stock.cards.forEach {
-                cardsVisitor.stockCard(it, position, cardWidth, cardHeight, solitaireModel.stock)
+            solitaireModel.stock.forEachCard { card ->
+                cardsVisitor.stockCard(card, position, cardWidth, cardHeight, solitaireModel.stock)
                 position.y += stockFanHeight
             }
         }
@@ -240,7 +228,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         run {
             val position = point(width - cardWidth * 2 - 8, tableauY + cardHeight + 10)
             cardsVisitor.wastePosition(position, cardWidth, cardHeight, solitaireModel.wastePile)
-            solitaireModel.wastePile.cards.lastOrNull()?.let { card ->
+            solitaireModel.wastePile.onVisibleCard { card ->
                 cardsVisitor.wasteCard(card, position, cardWidth, cardHeight, solitaireModel.wastePile)
             }
         }
@@ -251,9 +239,9 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
     private abstract class CardsVisitor {
         var shouldContinue = true
 
-        open fun otherPosition(container: CardContainer, position: Point, width: Int, height: Int) {}
+        open fun otherPosition(container: CardLocation, position: Point, width: Int, height: Int) {}
         open fun otherVisibleCard(
-            container: CardContainer,
+            container: CardLocation,
             card: Card,
             position: Point,
             width: Int,
@@ -262,7 +250,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         }
 
         open fun otherHiddenCard(
-            container: CardContainer,
+            container: CardLocation,
             card: Card,
             position: Point,
             width: Int,

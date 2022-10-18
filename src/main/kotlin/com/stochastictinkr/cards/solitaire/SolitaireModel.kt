@@ -6,65 +6,61 @@ import com.stochastictinkr.cards.standard.StandardDeck
 import kotlin.random.Random
 
 class SolitaireModel {
-    var random = Random(System.nanoTime())
-    var isGameActive = false
-    val foundations = CardSuit.values().map { FoundationPile(it) }
-    val stock = StockPile()
-    val tableauPiles = List(7) { TableauPile() }
-    val wastePile = WastePile()
+    private val listeners = mutableListOf<SolitaireListener>()
+    private var random = Random(System.nanoTime())
+    val foundations = CardSuit.values().map { FoundationPile(it, this) }
+    val stock = StockPile(this)
+    val tableauPiles = List(7) { TableauPile(this) }
+    val wastePile = WastePile(this)
 
-    val selectCards = mutableListOf<Card>()
-    var sourceContainer: CardContainer? = null
+    private val selectCards = mutableListOf<Card>()
+    private var sourceContainer: CardSource? = null
+
     val hasSelection get() = selectCards.isNotEmpty() && sourceContainer != null
+    val numberOfCardsInStock get() = stock.numberOfCards
 
     fun newGame() {
+        stock.setDeck(StandardDeck.cards.shuffled(random))
         foundations.forEach { it.clear() }
         tableauPiles.forEach { it.clear() }
-        stock.cards.addAll(StandardDeck.cards.shuffled(random))
+        wastePile.clear()
 
-        for (i in 0 until 7) {
-            tableauPiles[6 - i].addVisibleCard(stock.removeTop())
-            for (j in (i + 1) until 7) {
-                tableauPiles[6 - j].addHiddenCard(stock.removeTop())
+        for (i in tableauPiles.indices) {
+            stock.dealFaceUpTo(tableauPiles[6 - i])
+            for (j in tableauPiles.indices.drop(i+1)) {
+                stock.dealFaceDownTo(tableauPiles[6 - j])
             }
         }
-        wastePile.add(stock.removeTop())
+        stock.dealFaceUpTo(wastePile)
         clearSelection()
-        isGameActive = true
     }
 
     fun pullFromStock() {
-        if (
-            stock.cards.isEmpty()) {
-            stock.cards.addAll(wastePile.cards.asReversed())
-            wastePile.cards.clear()
+        if (stock.isEmpty) {
+            wastePile.returnCardsTo(stock)
         }
-        stock.cards.removeLastOrNull()?.let { wastePile.add(it) }
+        stock.dealFaceUpTo(wastePile)
     }
 
-    fun moveSelectedCardsTo(container: CardContainer): Boolean {
-        if (container == sourceContainer) {
+    fun moveSelectedCardsTo(receiver: CardReceiver): Boolean {
+        if (receiver == sourceContainer) {
             clearSelection()
             return false
         }
-        val canReceive = container.canReceive(selectCards)
+        val canReceive = receiver.canReceive(selectCards)
         if (canReceive.isEmpty()) {
             return false
         }
-        placeSelected(container, canReceive)
+        receiver.receive(sourceContainer!!.take(canReceive))
+        clearSelection()
         return true
     }
 
 
-    fun select(container: CardContainer, card: Card) {
+    fun select(container: CardSource, card: Card) {
         selectCards.clear()
         selectCards.addAll(container.availableFrom(card))
-        sourceContainer = container
-    }
-
-    private fun placeSelected(container: CardContainer, canReceive: List<Card>) {
-        container.receive(sourceContainer!!.take(canReceive))
-        clearSelection()
+        sourceContainer = if (selectCards.isNotEmpty()) container else null
     }
 
     private fun clearSelection() {
@@ -75,25 +71,34 @@ class SolitaireModel {
     fun isSelected(card: Card) = selectCards.contains(card)
 
     fun autoMoveCard(
-        container: CardContainer,
+        container: CardSource,
         card: Card,
     ): Boolean {
         clearSelection()
         val availableCards = container.availableFrom(card)
-        return if (availableCards.isNotEmpty()) {
-            sequenceOf(foundations, tableauPiles)
-                .flatMap { it.asSequence() }
-                .map { it to it.canReceive(availableCards) }
-                .firstOrNull { (_, receivable) -> receivable.isNotEmpty() }
-                ?.let { (target, receivable) ->
-                    target.receive(container.take(receivable))
-                    true
-                } == true
-
-        } else {
-            false
+        if (availableCards.isEmpty()) {
+            return false
         }
+        val foundationTarget = foundations.map { it to it.canReceive(availableCards) }
+            .firstOrNull { (_, receivable) -> receivable.isNotEmpty() }
+        if (foundationTarget != null) {
+            foundationTarget.receiveFrom(container)
+            return true
+        }
+        val tableauTarget =
+            tableauPiles.asSequence()
+                .map { it to it.canReceive(availableCards) }
+                .filter { (_, receivable) -> receivable.isNotEmpty() }
+                .maxByOrNull { (_, receivable) -> receivable.size }
+        if (tableauTarget != null) {
+            tableauTarget.receiveFrom(container)
+            return true
+        }
+        return false
     }
 
-
+    private fun Pair<CardReceiver, List<Card>>.receiveFrom(container: CardSource) {
+        val (receiver, cards) = this
+        receiver.receive(container.take(cards))
+    }
 }

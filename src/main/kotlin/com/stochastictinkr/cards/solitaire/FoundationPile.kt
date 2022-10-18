@@ -4,34 +4,27 @@ import com.stochastictinkr.cards.standard.Card
 import com.stochastictinkr.cards.standard.CardRank
 import com.stochastictinkr.cards.standard.CardSuit
 
-class FoundationPile(private val ofSuit: CardSuit) : CardContainer {
-    val cards = mutableListOf<Card>()
-    fun canAdd(card: Card) = card.suit == ofSuit && isNext(card)
-    private fun isNext(card: Card) = if (cards.isEmpty()) {
-        card.rank == CardRank.ACE
-    } else {
-        cards.last().rank.isJustBefore(card.rank)
-    }
+class FoundationPile(private val ofSuit: CardSuit, override val model: SolitaireModel) : CardReceiver {
+    private val cards = mutableListOf<Card>()
+    val visibleCard get() = cards.lastOrNull()
 
-    fun clear() {
-        cards.clear()
-    }
+    inline fun <T> onVisibleCard(block: (Card) -> T): T? = visibleCard?.let(block)
 
-    override fun availableFrom(card: Card): List<Card> = emptyList()
+    private fun canAdd(card: Card) = card.suit == ofSuit && isNext(card)
+    private fun isNext(card: Card) =
+        if (cards.isEmpty()) card.rank == CardRank.ACE else cards.last().rank.isJustBefore(card.rank)
 
-    override fun take(cards: List<Card>): List<Card> {
-        throw UnsupportedOperationException()
-    }
+    fun clear() = cards.clear()
 
     override fun canReceive(cards: List<Card>): List<Card> =
-        cards.lastOrNull()
-            ?.let { if (canAdd(it)) listOf(it) else null }
-            ?: emptyList()
+        if (cards.isNotEmpty() && canAdd(cards.last())) {
+            listOf(cards.last())
+        } else {
+            emptyList()
+        }
 
     override fun receive(cards: List<Card>) {
-        if (cards.size != 1 || !canAdd(cards.first())) {
-            throw IllegalArgumentException()
-        }
+        require(cards.size == 1 && canAdd(cards.first()))
         this.cards.add(cards.first())
     }
 }

@@ -2,8 +2,12 @@ package com.stochastictinkr.cards.solitaire
 
 import com.stochastictinkr.cards.standard.Card
 
-class WastePile : CardContainer {
-    val cards = mutableListOf<Card>()
+class WastePile(override val model: SolitaireModel) : CardSource {
+    private val cards = mutableListOf<Card>()
+
+    fun clear() {
+        cards.clear()
+    }
     fun add(card: Card) {
         cards.add(card)
     }
@@ -18,9 +22,12 @@ class WastePile : CardContainer {
         return cards
     }
 
-    override fun canReceive(cards: List<Card>): List<Card> = emptyList()
+    fun returnCardsTo(stock: StockPile) {
+        stock.setDeck(cards.asReversed())
+        cards.clear()
+    }
 
-    override fun receive(cards: List<Card>) {
-        throw UnsupportedOperationException()
+    fun onVisibleCard(block: (Card)->Unit) {
+        cards.lastOrNull()?.let(block)
     }
 }

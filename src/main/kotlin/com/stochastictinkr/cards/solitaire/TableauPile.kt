@@ -4,10 +4,19 @@ import com.stochastictinkr.cards.standard.Card
 import com.stochastictinkr.cards.standard.CardRank
 
 
-class TableauPile : CardContainer {
-    val visibleCards = mutableListOf<Card>()
-    val hiddenCards = mutableListOf<Card>()
+class TableauPile(override val model: SolitaireModel) : CardSource, CardReceiver {
+    private val visibleCards = mutableListOf<Card>()
+    private val hiddenCards = mutableListOf<Card>()
+
     val isEmpty get() = visibleCards.isEmpty() && hiddenCards.isEmpty()
+
+    fun forEachVisibleCard(block: (Card) -> Unit) {
+        visibleCards.forEach(block)
+    }
+
+    fun forEachHiddenCard(block: (Card) -> Unit) {
+        hiddenCards.forEach(block)
+    }
 
     private fun canAdd(card: Card): Boolean {
         val (_, rank, color) = card
@@ -40,37 +49,36 @@ class TableauPile : CardContainer {
     }
 
     override fun take(cards: List<Card>): List<Card> {
-        if (visibleCards.size < cards.size ||
-            visibleCards.subList(visibleCards.size - cards.size, visibleCards.size) != cards
-        ){
-            throw IllegalArgumentException()
-        }
-        if (visibleCards.size == cards.size) {
-            visibleCards.clear()
-            hiddenCards.removeLastOrNull()?.let { visibleCards.add(it) }
-            return cards
-        }
+        require(
+            isTailOfVisibleCards(cards)
+        )
         visibleCards.subList(visibleCards.size - cards.size, visibleCards.size).clear()
+        if (visibleCards.isEmpty()) {
+            hiddenCards.removeLastOrNull()?.let { visibleCards.add(it) }
+        }
         return cards
     }
 
-    override fun canReceive(cards: List<Card>): List<Card> =
-        cards
+    private fun isTailOfVisibleCards(cards: List<Card>) = (
+            visibleCards.size >= cards.size
+                    && visibleCards.subList(visibleCards.size - cards.size, visibleCards.size) == cards
+            )
+
+    override fun canReceive(cards: List<Card>): List<Card> {
+        val addableList = cards
             .asSequence()
             .dropWhile { !canAdd(it) }
             .toList()
-            .let {
-                if (it.isValidTableau) {
-                    it
-                } else {
-                    emptyList()
-                }
-            }
+
+        return if (addableList.isValidTableau) {
+            addableList
+        } else {
+            emptyList()
+        }
+    }
 
     override fun receive(cards: List<Card>) {
-        if (!cards.isValidTableau || cards.firstOrNull()?.let { canAdd(it) } != true) {
-            throw IllegalArgumentException()
-        }
+        require(cards.isValidTableau && cards.firstOrNull()?.let { canAdd(it) } == true)
         visibleCards.addAll(cards)
     }
 
