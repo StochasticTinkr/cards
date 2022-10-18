@@ -29,74 +29,42 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
     private val tableauVisibleCardFanHeight get() = images.cardHeight / 8
     private val stockFanHeight get() = -images.cardHeight / 90
 
-    val selectCards = mutableListOf<Card>()
-    var sourceContainer: CardContainer? = null
 
     private val mouseListener = object : MouseAdapter() {
-        override fun mouseClicked(e: MouseEvent) {
+        override fun mousePressed(e: MouseEvent) {
             if (!SwingUtilities.isLeftMouseButton(e)) {
                 return
             }
             if (e.clickCount == 2) {
-                withCardAt(e.point) { container, card ->
-                    val availableCards = container.availableFrom(card)
-                    if (availableCards.isNotEmpty()) {
-                        sequenceOf(solitaireModel.foundations, solitaireModel.tableauPiles)
-                            .flatMap { it.asSequence() }
-                            .map { it to it.canReceive(availableCards) }
-                            .firstOrNull { (_, receivable) -> receivable.isNotEmpty() }
-                            ?.let { (target, receivable) ->
-                                target.receive(container.take(receivable))
-                                repaint()
-                            }
-                    }
+                val success = withCardAt(e.point) { container, card ->
+                    solitaireModel.autoMoveCard(container, card)
+                }
+                if (success == true) {
+                    repaint()
                 }
                 return
             }
             if (e.clickCount == 1) {
                 if (e.point in stockBounds) {
-                    if (solitaireModel.stock.cards.isEmpty()) {
-                        solitaireModel.stock.cards.addAll(solitaireModel.wastePile.cards)
-                        solitaireModel.wastePile.cards.clear()
-                    }
-                    solitaireModel.stock.cards.removeLastOrNull()?.let { solitaireModel.wastePile.add(it) }
+                    solitaireModel.pullFromStock()
                     repaint()
                     return
                 }
-                if (selectCards.isNotEmpty() && sourceContainer != null) {
-                    var returns =
-                        withContainerAt(e.point) { container ->
-                            val canReceive = container.canReceive(selectCards)
-                            if (canReceive.isNotEmpty()) {
-                                placeSelected(container, canReceive)
-                                repaint()
-                                true
-                            } else {
-                                false
-                            }
-                        }
-                    if (returns == true) {
+                if (solitaireModel.hasSelection) {
+                    val success = withContainerAt(e.point, solitaireModel::moveSelectedCardsTo)
+                    if (success == true) {
+                        repaint()
                         return
                     }
-                    withCardAt(e.point) { container, card ->
-                        select(container, card)
-                        repaint()
-                    }
+                }
+                withCardAt(e.point) { container, card ->
+                    solitaireModel.select(container, card)
+                    repaint()
                 }
             }
         }
     }
 
-    private fun placeSelected(container: CardContainer, canReceive: List<Card>) {
-        selectCards.clear()
-        container.receive(sourceContainer!!.take(canReceive))
-        sourceContainer = null
-    }
-
-    private fun select(container: CardContainer, card: Card) {
-        selectCards.addAll(container.availableFrom(card))
-        sourceContainer = container
-    }
 
     init {
         addMouseListener(mouseListener)
@@ -108,7 +76,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         var result: CardContainer? = null
         visitAll(object : CardsVisitor() {
             override fun otherPosition(container: CardContainer, position: Point, width: Int, height: Int) {
-                if (point in Rectangle(point, Dimension(width, height))) {
+                if (point in Rectangle(position, Dimension(width, height))) {
                     result = container
                     done()
                 }
@@ -121,7 +89,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
                 width: Int,
                 height: Int,
             ) {
-                if (point in Rectangle(point, Dimension(width, height))) {
+                if (point in Rectangle(position, Dimension(width, height))) {
                     result = container
                     done()
                 }
@@ -134,7 +102,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
                 width: Int,
                 height: Int,
             ) {
-                if (point in Rectangle(point, Dimension(width, height))) {
+                if (point in Rectangle(position, Dimension(width, height))) {
                     result = container
                     done()
                 }
@@ -177,13 +145,9 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
                 }
             }
         })
+
         return bestFound?.let { (container, card) ->
-            println("found ${card.name}")
             function(container, card)
-        }.also {
-            if (it == null) {
-                println("None found")
-            }
         }
     }
 
@@ -224,7 +188,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
 
     private fun Graphics2D.drawCard(card: Card, position: Point) {
         val image = images[card]
-        if (selectCards.contains(card)) {
+        if (solitaireModel.isSelected(card)) {
             paint = Color.YELLOW
             fillRoundRect(position.x - 1, position.y - 1, image.width + 2, image.height + 2, 5, 5)
         }
@@ -233,14 +197,14 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
 
     private val stockBounds: Rectangle
         get() {
-            val movement = stockFanHeight * solitaireModel.stock.cards.size * stockFanHeight
+            val movement = stockFanHeight * solitaireModel.stock.cards.size
             val startPoint = stockStartPoint
             return Rectangle(startPoint.x, startPoint.y + movement, images.cardWidth, images.cardHeight - movement)
         }
 
 
     private fun visitAll(cardsVisitor: CardsVisitor) {
-        images.cardWidth = width / 11
+        images.cardWidth = width / 10
         val cardWidth = images.cardWidth
         val cardHeight = images.cardHeight
         solitaireModel.foundations.forEachIndexed { index, pile ->
