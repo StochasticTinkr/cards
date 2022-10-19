@@ -7,7 +7,8 @@ import com.stochastictinkr.cards.standard.CardRank
 class TableauPile(override val model: SolitaireModel) : CardSource, CardReceiver {
     private val visibleCards = mutableListOf<Card>()
     private val hiddenCards = mutableListOf<Card>()
-
+    val visibleCardCount get() = visibleCards.size
+    val hiddenCardCount get() = hiddenCards.size
     val isEmpty get() = visibleCards.isEmpty() && hiddenCards.isEmpty()
 
     fun forEachVisibleCard(block: (Card) -> Unit) {

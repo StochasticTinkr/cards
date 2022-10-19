@@ -25,8 +25,8 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
     private val tableauMargin = 12
     private val foundationY = 15
     private val tableauY: Int get() = foundationY + images.cardHeight + foundationMargin + tableauMargin
-    private val tableauHiddenCardFanHeight get() = images.cardHeight / 15
-    private val tableauVisibleCardFanHeight get() = images.cardHeight / 8
+    private val tableauHiddenCardFanHeight get() = images.cardHeight / 13
+    private val tableauVisibleCardFanHeight get() = images.cardHeight / 6
     private val stockFanHeight get() = -images.cardHeight / 90
 
 
@@ -35,7 +35,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
             if (!SwingUtilities.isLeftMouseButton(e)) {
                 return
             }
-            if (e.clickCount == 2) {
+            if (e.clickCount and 1 == 0) {
                 val success = withSourcedCardAt(e.point) { container, card ->
                     solitaireModel.autoMoveCard(container, card)
                 }
@@ -61,7 +61,9 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
                     solitaireModel.select(container, card)
                     repaint()
                 }
+                return
             }
+            println("${e.clickCount}")
         }
     }
 
@@ -95,7 +97,14 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
                 tableauPile: TableauPile,
                 index: Int,
             ) {
-                if (point in Rectangle(position, Dimension(width, height))) {
+                if (point in Rectangle(
+                        position,
+                        Dimension(
+                            width,
+                            height + tableauPile.hiddenCardCount * tableauHiddenCardFanHeight + tableauPile.visibleCardCount * tableauVisibleCardFanHeight
+                        )
+                    )
+                ) {
                     result = tableauPile
                     done()
                 }
