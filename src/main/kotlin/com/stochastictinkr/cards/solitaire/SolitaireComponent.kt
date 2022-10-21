@@ -22,9 +22,12 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
     private var cardBack = CardBacks.BLUE
     private val images = CardImages()
     private val foundationMargin = 15
-    private val tableauMargin = 12
+    private val foundationX get() = width / 2 - (images.cardWidth * 2 + foundationMargin + foundationMargin / 2)
     private val foundationY = 15
+    private val tableauMargin = 12
+    private val tableauX = 8
     private val tableauY: Int get() = foundationY + images.cardHeight + foundationMargin + tableauMargin
+
     private val tableauHiddenCardFanHeight get() = images.cardHeight / 13
     private val tableauVisibleCardFanHeight get() = images.cardHeight / 6
     private val stockFanHeight get() = -images.cardHeight / 90
@@ -205,7 +208,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         val cardWidth = images.cardWidth
         val cardHeight = images.cardHeight
         solitaireModel.foundations.forEachIndexed { index, pile ->
-            val position = point(15 + (cardWidth + foundationMargin) * index, foundationY)
+            val position = point(foundationX + (cardWidth + foundationMargin) * index, foundationY)
             cardsVisitor.foundationPosition(position, cardWidth, cardHeight, pile, index)
             pile.onVisibleCard { visibleCard ->
                 cardsVisitor.foundationCard(visibleCard, position, cardWidth, cardHeight, pile, index)
@@ -213,7 +216,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         }
 
         solitaireModel.tableauPiles.forEachIndexed { index, pile ->
-            val position = point(8 + (cardWidth + tableauMargin) * index, tableauY)
+            val position = point(tableauX + (cardWidth + tableauMargin) * index, tableauY)
             cardsVisitor.tableauPosition(position, cardWidth, cardHeight, pile, index)
             pile.forEachHiddenCard {
                 cardsVisitor.hiddenTableauCard(it, position, cardWidth, cardHeight, pile, index)

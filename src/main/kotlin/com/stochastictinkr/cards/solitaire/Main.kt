@@ -8,11 +8,17 @@ import com.stochastictinkr.skywing.swing.menuBar
 import java.awt.EventQueue.invokeLater
 import java.awt.Frame
 import javax.swing.JFrame
+import kotlin.system.exitProcess
 
 fun main() {
-    initSkywing()
+    initSkywing("Solitaire")
     invokeLater {
-        val jFrame = JFrame("Solitaire")
+        val jFrame = JFrame()
+        with (jFrame.rootPane) {
+            putClientProperty("apple.awt.fullscreenable", true)
+            putClientProperty("apple.awt.fullWindowContent", true)
+            putClientProperty("apple.awt.transparentTitleBar", true)
+        }
         val solitaireModel = SolitaireModel()
         solitaireModel.newGame()
 
@@ -22,7 +28,7 @@ fun main() {
             solitaireComponent.repaint()
         }
         val quit = action(name = "Quit") {
-            jFrame.dispose()
+            exitProcess(0)
         }
         with(jFrame) {
             menuBar {
