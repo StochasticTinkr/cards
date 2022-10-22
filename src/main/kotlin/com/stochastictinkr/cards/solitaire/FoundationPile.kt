@@ -4,7 +4,7 @@ import com.stochastictinkr.cards.standard.Card
 import com.stochastictinkr.cards.standard.CardRank
 import com.stochastictinkr.cards.standard.CardSuit
 
-class FoundationPile(private val ofSuit: CardSuit, override val model: SolitaireModel) : CardReceiver {
+class FoundationPile(private val ofSuit: CardSuit) : CardReceiver {
     private val cards = mutableListOf<Card>()
     val visibleCard get() = cards.lastOrNull()
 

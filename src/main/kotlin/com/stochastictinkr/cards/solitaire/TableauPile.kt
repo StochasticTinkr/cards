@@ -4,7 +4,7 @@ import com.stochastictinkr.cards.standard.Card
 import com.stochastictinkr.cards.standard.CardRank
 
 
-class TableauPile(override val model: SolitaireModel) : CardSource, CardReceiver {
+class TableauPile(val solitaireListener: SolitaireListener) : CardSource, CardReceiver {
     private val visibleCards = mutableListOf<Card>()
     private val hiddenCards = mutableListOf<Card>()
     val visibleCardCount get() = visibleCards.size

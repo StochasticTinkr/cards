@@ -6,12 +6,12 @@ import com.stochastictinkr.cards.standard.StandardDeck
 import kotlin.random.Random
 
 class SolitaireModel {
-    private val listeners = mutableListOf<SolitaireListener>()
+    private val listeners = SolitaireListeners()
     private var random = Random(System.nanoTime())
-    val foundations = CardSuit.values().map { FoundationPile(it, this) }
-    val stock = StockPile(this)
-    val tableauPiles = List(7) { TableauPile(this) }
-    val wastePile = WastePile(this)
+    val foundations = CardSuit.values().map { FoundationPile(it) }
+    val stock = StockPile(listeners)
+    val tableauPiles = List(7) { TableauPile(listeners) }
+    val wastePile = WastePile(listeners)
 
     private val selectCards = mutableListOf<Card>()
     private var sourceContainer: CardSource? = null
@@ -27,13 +27,14 @@ class SolitaireModel {
 
         for (i in tableauPiles.indices) {
             stock.dealFaceUpTo(tableauPiles[6 - i])
-            for (j in tableauPiles.indices.drop(i+1)) {
+            for (j in tableauPiles.indices.drop(i + 1)) {
                 stock.dealFaceDownTo(tableauPiles[6 - j])
             }
         }
         stock.dealFaceUpTo(wastePile)
         clearSelection()
     }
+
 
     fun pullFromStock() {
         if (stock.isEmpty) {
@@ -42,16 +43,18 @@ class SolitaireModel {
         stock.dealFaceUpTo(wastePile)
     }
 
-    fun moveSelectedCardsTo(receiver: CardReceiver): Boolean {
-        if (receiver == sourceContainer) {
+    fun moveSelectedCardsTo(target: CardReceiver): Boolean {
+        if (target == sourceContainer) {
             clearSelection()
             return false
         }
-        val canReceive = receiver.canReceive(selectCards)
-        if (canReceive.isEmpty()) {
+        val cardsToMove = target.canReceive(selectCards)
+        if (cardsToMove.isEmpty()) {
             return false
         }
-        receiver.receive(sourceContainer!!.take(canReceive))
+        val source = sourceContainer!!
+        listeners.cardsMoved(source, cardsToMove, target)
+        target.receive(source.take(cardsToMove))
         clearSelection()
         return true
     }
@@ -59,13 +62,20 @@ class SolitaireModel {
 
     fun select(container: CardSource, card: Card) {
         selectCards.clear()
-        selectCards.addAll(container.availableFrom(card))
-        sourceContainer = if (selectCards.isNotEmpty()) container else null
+        val cards = container.availableFrom(card)
+        selectCards.addAll(cards)
+        if (selectCards.isNotEmpty()) {
+            sourceContainer = container
+            listeners.selectionChanged(container, cards)
+        } else {
+            listeners.selectionCleared()
+        }
     }
 
     private fun clearSelection() {
         selectCards.clear()
         sourceContainer = null
+        listeners.selectionCleared()
     }
 
     fun isSelected(card: Card) = selectCards.contains(card)
@@ -82,7 +92,8 @@ class SolitaireModel {
         val foundationTarget = foundations.map { it to it.canReceive(availableCards) }
             .firstOrNull { (_, receivable) -> receivable.isNotEmpty() }
         if (foundationTarget != null) {
-            foundationTarget.receiveFrom(container)
+            val (receiver, cards) = foundationTarget
+            transfer(receiver, cards, container)
             return true
         }
         val tableauTarget =
@@ -91,14 +102,24 @@ class SolitaireModel {
                 .filter { (_, receivable) -> receivable.isNotEmpty() }
                 .maxByOrNull { (_, receivable) -> receivable.size }
         if (tableauTarget != null) {
-            tableauTarget.receiveFrom(container)
+            val (receiver, cards) = tableauTarget
+            transfer(receiver, cards, container)
             return true
         }
         return false
     }
 
-    private fun Pair<CardReceiver, List<Card>>.receiveFrom(container: CardSource) {
-        val (receiver, cards) = this
-        receiver.receive(container.take(cards))
+    private fun transfer(target: CardReceiver, cards: List<Card>, source: CardSource) {
+        listeners.cardsMoved(source, cards, target)
+        target.receive(source.take(cards))
     }
+
+
+    fun addListener(listener: SolitaireListener) {
+        listeners.add(listener)
+    }
+    fun removeListener(listener: SolitaireListener) {
+        listeners.remove(listener)
+    }
+
 }

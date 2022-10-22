@@ -2,7 +2,7 @@ package com.stochastictinkr.cards.solitaire
 
 import com.stochastictinkr.cards.standard.Card
 
-class WastePile(override val model: SolitaireModel) : CardSource {
+class WastePile(val solitaireListener: SolitaireListener) : CardSource {
     private val cards = mutableListOf<Card>()
 
     fun clear() {
@@ -16,14 +16,15 @@ class WastePile(override val model: SolitaireModel) : CardSource {
         if (cards.lastOrNull() == card) listOf(card) else emptyList()
 
     override fun take(cards: List<Card>): List<Card> {
-        if (cards.size > 1 || cards.first() != this.cards.lastOrNull())
-            throw IllegalArgumentException()
+        require(cards.size == 1 && cards.first() == this.cards.lastOrNull())
         this.cards.removeLast()
         return cards
     }
 
     fun returnCardsTo(stock: StockPile) {
-        stock.setDeck(cards.asReversed())
+        val newDeck = cards.reversed()
+        solitaireListener.wasteRestocked(this, newDeck, stock)
+        stock.setDeck(newDeck)
         cards.clear()
     }
 

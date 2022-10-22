@@ -2,12 +2,14 @@ package com.stochastictinkr.cards.solitaire
 
 import com.stochastictinkr.cards.standard.Card
 
-class StockPile(override val model: SolitaireModel) : CardLocation  {
+class StockPile(val solitaireListener: SolitaireListener) : CardLocation {
     val numberOfCards get() = cards.size
-    val isEmpty get()= cards.isEmpty()
+    val isEmpty get() = cards.isEmpty()
     private val cards = ArrayList<Card>(52)
     fun dealFaceUpTo(tableauPile: TableauPile) {
-        tableauPile.addVisibleCard(cards.removeLast())
+        val card = cards.removeLast()
+        solitaireListener.cardDealtFaceUp(this, card, tableauPile)
+        tableauPile.addVisibleCard(card)
     }
 
     fun dealFaceDownTo(tableauPile: TableauPile) {
