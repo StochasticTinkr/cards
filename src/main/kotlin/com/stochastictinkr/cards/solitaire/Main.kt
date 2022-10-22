@@ -19,12 +19,12 @@ fun main() {
             putClientProperty("apple.awt.fullWindowContent", true)
             putClientProperty("apple.awt.transparentTitleBar", true)
         }
-        val solitaireModel = SolitaireModel()
-        solitaireModel.newGame()
+        val solitaireGame = SolitaireGame()
+        solitaireGame.newGame()
 
-        val solitaireComponent = SolitaireComponent(solitaireModel)
+        val solitaireComponent = SolitaireComponent(solitaireGame)
         val newGame = action(name = "Name Game", actionCommand = "New Game") {
-            solitaireModel.newGame()
+            solitaireGame.newGame()
             solitaireComponent.repaint()
         }
         val quit = action(name = "Quit") {

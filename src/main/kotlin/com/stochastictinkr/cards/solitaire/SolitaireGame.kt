@@ -5,7 +5,7 @@ import com.stochastictinkr.cards.standard.CardSuit
 import com.stochastictinkr.cards.standard.StandardDeck
 import kotlin.random.Random
 
-class SolitaireModel {
+class SolitaireGame {
     private val listeners = SolitaireListeners()
     private var random = Random(System.nanoTime())
     val foundations = CardSuit.values().map { FoundationPile(it) }

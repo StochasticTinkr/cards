@@ -18,7 +18,7 @@ import javax.swing.JComponent
 import javax.swing.SwingUtilities
 
 
-class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
+class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
     private var cardBack = CardBacks.BLUE
     private val images = CardImages()
     private val foundationMargin = 15
@@ -40,7 +40,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
             }
             if (e.clickCount and 1 == 0) {
                 val success = withSourcedCardAt(e.point) { container, card ->
-                    solitaireModel.autoMoveCard(container, card)
+                    solitaireGame.autoMoveCard(container, card)
                 }
                 if (success == true) {
                     repaint()
@@ -49,24 +49,50 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
             }
             if (e.clickCount == 1) {
                 if (e.point in stockBounds) {
-                    solitaireModel.pullFromStock()
+                    solitaireGame.pullFromStock()
                     repaint()
                     return
                 }
-                if (solitaireModel.hasSelection) {
-                    val success = withReceiverAt(e.point) { solitaireModel.moveSelectedCardsTo(it) }
+                if (solitaireGame.hasSelection) {
+                    val success = withReceiverAt(e.point) { solitaireGame.moveSelectedCardsTo(it) }
                     if (success == true) {
                         repaint()
                         return
                     }
                 }
                 withSourcedCardAt(e.point) { container, card ->
-                    solitaireModel.select(container, card)
+                    solitaireGame.select(container, card)
                     repaint()
                 }
                 return
             }
             println("${e.clickCount}")
+        }
+    }
+
+    private val solitateListener = object:SolitaireListener {
+        override fun cardDealtFaceUp(stockPile: StockPile, card: Card, cardReceiver: CardReceiver) {
+            repaint()
+        }
+
+        override fun cardDealtFaceDown(stockPile: StockPile, card: Card, cardReceiver: CardReceiver) {
+            repaint()
+        }
+
+        override fun wasteRestocked(wastePile: WastePile, cards: List<Card>, stockPile: StockPile) {
+            repaint()
+        }
+
+        override fun cardsMoved(cardSource: CardSource, cards: List<Card>, cardReceiver: CardReceiver) {
+            repaint()
+        }
+
+        override fun selectionChanged(cardSource: CardSource, selectedCards: List<Card>) {
+            repaint()
+        }
+
+        override fun selectionCleared() {
+            repaint()
         }
     }
 
@@ -188,7 +214,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
 
     private fun Graphics2D.drawCard(card: Card, position: Point) {
         val image = images[card]
-        if (solitaireModel.isSelected(card)) {
+        if (solitaireGame.isSelected(card)) {
             paint = Color.YELLOW
             fillRoundRect(position.x - 1, position.y - 1, image.width + 2, image.height + 2, 5, 5)
         }
@@ -197,7 +223,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
 
     private val stockBounds: Rectangle
         get() {
-            val movement = stockFanHeight * solitaireModel.numberOfCardsInStock
+            val movement = stockFanHeight * solitaireGame.numberOfCardsInStock
             val startPoint = stockStartPoint
             return Rectangle(startPoint.x, startPoint.y + movement, images.cardWidth, images.cardHeight - movement)
         }
@@ -207,7 +233,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
         images.cardWidth = width / 10
         val cardWidth = images.cardWidth
         val cardHeight = images.cardHeight
-        solitaireModel.foundations.forEachIndexed { index, pile ->
+        solitaireGame.foundations.forEachIndexed { index, pile ->
             val position = point(foundationX + (cardWidth + foundationMargin) * index, foundationY)
             cardsVisitor.foundationPosition(position, cardWidth, cardHeight, pile, index)
             pile.onVisibleCard { visibleCard ->
@@ -215,7 +241,7 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
             }
         }
 
-        solitaireModel.tableauPiles.forEachIndexed { index, pile ->
+        solitaireGame.tableauPiles.forEachIndexed { index, pile ->
             val position = point(tableauX + (cardWidth + tableauMargin) * index, tableauY)
             cardsVisitor.tableauPosition(position, cardWidth, cardHeight, pile, index)
             pile.forEachHiddenCard {
@@ -230,18 +256,18 @@ class SolitaireComponent(val solitaireModel: SolitaireModel) : JComponent() {
 
         run {
             val position = stockStartPoint
-            cardsVisitor.stockPosition(position, cardWidth, cardHeight, solitaireModel.stock)
-            solitaireModel.stock.forEachCard { card ->
-                cardsVisitor.stockCard(card, position, cardWidth, cardHeight, solitaireModel.stock)
+            cardsVisitor.stockPosition(position, cardWidth, cardHeight, solitaireGame.stock)
+            solitaireGame.stock.forEachCard { card ->
+                cardsVisitor.stockCard(card, position, cardWidth, cardHeight, solitaireGame.stock)
                 position.y += stockFanHeight
             }
         }
 
         run {
             val position = point(width - cardWidth * 2 - 8, tableauY + cardHeight + 10)
-            cardsVisitor.wastePosition(position, cardWidth, cardHeight, solitaireModel.wastePile)
-            solitaireModel.wastePile.onVisibleCard { card ->
-                cardsVisitor.wasteCard(card, position, cardWidth, cardHeight, solitaireModel.wastePile)
+            cardsVisitor.wastePosition(position, cardWidth, cardHeight, solitaireGame.wastePile)
+            solitaireGame.wastePile.onVisibleCard { card ->
+                cardsVisitor.wasteCard(card, position, cardWidth, cardHeight, solitaireGame.wastePile)
             }
         }
     }
