@@ -2,17 +2,15 @@ package com.stochastictinkr.cards.solitaire
 
 import com.stochastictinkr.cards.standard.Card
 
-private typealias Cards = List<Card>
-
 data class SolitaireState(
-    val foundations: List<Cards>,
-    val tableauHidden: List<Cards>,
-    val tableauVisible: List<Cards>,
-    val stock: Cards,
-    val waste: Cards,
+    val foundations: List<List<Card>>,
+    val tableauHidden: List<List<Card>>,
+    val tableauVisible: List<List<Card>>,
+    val stock: List<Card>,
+    val waste: List<Card>,
 ) {
     fun removeFromTableau(idx: Int, numCards: Int) =
-        if (tableauVisible.size < numCards || tableauHidden.isEmpty()) {
+        if (tableauVisible[idx].size < numCards || tableauHidden[idx].isEmpty()) {
             copy(
                 tableauVisible = tableauVisible.modify(idx) { it.subList(0, it.size - numCards) })
         } else {
@@ -22,7 +20,7 @@ data class SolitaireState(
             )
         }
 
-    fun addToTableau(idx: Int, cards: Cards) =
+    fun addToTableau(idx: Int, cards: List<Card>) =
         copy(
             tableauVisible = tableauVisible.modify(idx) { it + cards }
         )

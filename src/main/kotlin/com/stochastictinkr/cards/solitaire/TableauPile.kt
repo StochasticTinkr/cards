@@ -4,53 +4,51 @@ import com.stochastictinkr.cards.standard.Card
 import com.stochastictinkr.cards.standard.CardRank
 
 
-class TableauPile(val solitaireListener: SolitaireListener, private val game: SolitaireGame, private val idx: Int) :
+class TableauPile(private val game: SolitaireGame, private val idx: Int) :
     CardSource, CardReceiver {
-    private val visibleCards get() = game.state.tableauVisible[idx]
-    private val hiddenCards get() = game.state.tableauHidden[idx]
-    val visibleCardCount get() = visibleCards.size
-    val hiddenCardCount get() = hiddenCards.size
-    val isEmpty get() = visibleCards.isEmpty() && hiddenCards.isEmpty()
+    val visibleCardCount get() = game.currentState.tableauVisible[idx].size
+    val hiddenCardCount get() = game.currentState.tableauHidden[idx].size
+    val isEmpty get() = game.currentState.tableauVisible[idx].isEmpty() && game.currentState.tableauHidden[idx].isEmpty()
 
     fun forEachVisibleCard(block: (Card) -> Unit) {
-        visibleCards.forEach(block)
+        game.currentState.tableauVisible[idx].forEach(block)
     }
 
     override fun transfer(cards: List<Card>, target: CardReceiver, state: SolitaireState): SolitaireState {
-        require(visibleCards.endsWith(cards))
+        require(game.currentState.tableauVisible[idx].endsWith(cards))
         return target.receive(cards, state.removeFromTableau(idx, cards.size))
     }
 
     fun forEachHiddenCard(block: (Card) -> Unit) {
-        hiddenCards.forEach(block)
+        game.currentState.tableauHidden[idx].forEach(block)
     }
 
-    private fun canAdd(card: Card): Boolean {
+    private fun canAdd(card: Card, state: SolitaireState): Boolean {
         val (_, rank, color) = card
         return when {
             isEmpty -> rank == CardRank.KING
-            else -> visibleCards.last().let { (_, topRank, topColor) ->
+            else -> state.tableauVisible[idx].last().let { (_, topRank, topColor) ->
                 topColor != color && topRank.isJustAfter(rank)
             }
         }
     }
 
-    override fun availableFrom(card: Card): List<Card> {
-        if (hiddenCards.contains(card)) {
-            return visibleCards
+    override fun availableFrom(card: Card, state: SolitaireState): List<Card> {
+        if (state.tableauHidden[idx].contains(card)) {
+            return state.tableauVisible[idx]
         }
-        return visibleCards.asSequence().dropWhile { it != card }.toList()
+        return state.tableauVisible[idx].asSequence().dropWhile { it != card }.toList()
     }
 
     override fun receive(cards: List<Card>, state: SolitaireState): SolitaireState {
-        require(cards.isValidTableau && cards.firstOrNull()?.let { canAdd(it) } == true)
+        require(cards.isValidTableau && cards.firstOrNull()?.let { canAdd(it, game.currentState) } == true)
         return state.addToTableau(idx, cards)
     }
 
-    override fun canReceive(cards: List<Card>): List<Card> {
+    override fun canReceive(cards: List<Card>, state: SolitaireState): List<Card> {
         val addableList = cards
             .asSequence()
-            .dropWhile { !canAdd(it) }
+            .dropWhile { !canAdd(it, game.currentState) }
             .toList()
 
         return if (addableList.isValidTableau) {

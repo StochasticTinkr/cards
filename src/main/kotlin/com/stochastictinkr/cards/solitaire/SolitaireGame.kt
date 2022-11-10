@@ -8,22 +8,25 @@ import kotlin.random.Random
 class SolitaireGame {
     private val listeners = SolitaireListeners()
     private var random = Random(System.nanoTime())
-    var state: SolitaireState = newGameState()
+    private var state: SolitaireState = newGameState()
         set(value) {
             val oldState = field
             field = value
             listeners.stateChanged(oldState, value)
         }
+    private val undoHistory = mutableListOf<SolitaireState>()
+    private val redoHistory = mutableListOf<SolitaireState>()
 
+    val currentState: SolitaireState get() = state
     val foundations = CardSuit.values().map { suit -> FoundationPile(suit, this) }
-    val tableauPiles = List(7) { idx -> TableauPile(listeners, this, idx) }
+    val tableauPiles = List(7) { idx -> TableauPile(this, idx) }
     val wastePile = WastePile(this)
 
     private val selectCards = mutableListOf<Card>()
     private var sourceContainer: CardSource? = null
 
     val hasSelection get() = selectCards.isNotEmpty() && sourceContainer != null
-    val numberOfCardsInStock get() = state.stock.size
+    val numberOfCardsInStock get() = currentState.stock.size
 
     fun newGame() {
         state = newGameState()
@@ -49,7 +52,27 @@ class SolitaireGame {
 
 
     fun pullFromStock() {
-        state = state.pullFromStock()
+        pushState(currentState.pullFromStock())
+    }
+
+    private fun pushState(state: SolitaireState) {
+        redoHistory.clear()
+        undoHistory.add(currentState)
+        this.state = state
+    }
+
+    fun undo() {
+        undoHistory.removeLastOrNull()?.let { previousState ->
+            redoHistory.add(currentState)
+            this.state = previousState
+        }
+    }
+
+    fun redo() {
+        redoHistory.removeLastOrNull()?.let { nextState ->
+            undoHistory.add(currentState)
+            this.state = nextState
+        }
     }
 
     fun moveSelectedCardsTo(target: CardReceiver): Boolean {
@@ -57,7 +80,7 @@ class SolitaireGame {
             clearSelection()
             return false
         }
-        val cardsToMove = target.canReceive(selectCards)
+        val cardsToMove = target.canReceive(selectCards, currentState)
         if (cardsToMove.isEmpty()) {
             return false
         }
@@ -69,7 +92,7 @@ class SolitaireGame {
 
     fun select(container: CardSource, card: Card) {
         selectCards.clear()
-        val cards = container.availableFrom(card)
+        val cards = container.availableFrom(card, currentState)
         selectCards.addAll(cards)
         if (selectCards.isNotEmpty()) {
             sourceContainer = container
@@ -92,11 +115,11 @@ class SolitaireGame {
         card: Card,
     ): Boolean {
         clearSelection()
-        val availableCards = container.availableFrom(card)
+        val availableCards = container.availableFrom(card, currentState)
         if (availableCards.isEmpty()) {
             return false
         }
-        val foundationTarget = foundations.map { it to it.canReceive(availableCards) }
+        val foundationTarget = foundations.map { it to it.canReceive(availableCards, currentState) }
             .firstOrNull { (_, receivable) -> receivable.isNotEmpty() }
         if (foundationTarget != null) {
             val (receiver, cards) = foundationTarget
@@ -105,7 +128,7 @@ class SolitaireGame {
         }
         val tableauTarget =
             tableauPiles.asSequence()
-                .map { it to it.canReceive(availableCards) }
+                .map { it to it.canReceive(availableCards, currentState) }
                 .filter { (_, receivable) -> receivable.isNotEmpty() }
                 .maxByOrNull { (_, receivable) -> receivable.size }
         if (tableauTarget != null) {
@@ -117,7 +140,7 @@ class SolitaireGame {
     }
 
     private fun transfer(target: CardReceiver, cards: List<Card>, source: CardSource) {
-        state = source.transfer(cards, target, state)
+        pushState(source.transfer(cards, target, currentState))
     }
 
 
@@ -125,6 +148,7 @@ class SolitaireGame {
         listeners.add(listener)
     }
 
+    @Suppress("unused")
     fun removeListener(listener: SolitaireListener) {
         listeners.remove(listener)
     }

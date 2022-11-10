@@ -6,15 +6,19 @@ import com.stochastictinkr.cards.standard.Card
 import com.stochastictinkr.skywing.awt.geom.point
 import com.stochastictinkr.skywing.awt.geom.roundRectangle
 import com.stochastictinkr.skywing.awt.hints
+import com.stochastictinkr.skywing.swing.action
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Point
 import java.awt.Rectangle
+import java.awt.event.InputEvent
+import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JComponent
+import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
 
 
@@ -82,6 +86,13 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         addMouseListener(mouseListener)
         addMouseMotionListener(mouseListener)
         addMouseWheelListener(mouseListener)
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.META_DOWN_MASK), "Undo")
+        inputMap.put(
+            KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.META_DOWN_MASK or InputEvent.SHIFT_DOWN_MASK),
+            "Redo"
+        )
+        actionMap.put("Undo", action { solitaireGame.undo() })
+        actionMap.put("Redo", action { solitaireGame.redo() })
         solitaireGame.addListener(solitaireListener)
     }
 
@@ -239,7 +250,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         run {
             val position = stockStartPoint
             cardsVisitor.stockPosition(position, cardWidth, cardHeight, StockPile)
-            solitaireGame.state.stock.forEach { card ->
+            solitaireGame.currentState.stock.forEach { card ->
                 cardsVisitor.stockCard(card, position, cardWidth, cardHeight, StockPile)
                 position.y += stockFanHeight
             }
