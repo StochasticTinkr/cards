@@ -4,15 +4,21 @@ import com.stochastictinkr.cards.standard.Card
 import com.stochastictinkr.cards.standard.CardRank
 
 
-class TableauPile(val solitaireListener: SolitaireListener) : CardSource, CardReceiver {
-    private val visibleCards = mutableListOf<Card>()
-    private val hiddenCards = mutableListOf<Card>()
+class TableauPile(val solitaireListener: SolitaireListener, private val game: SolitaireGame, private val idx: Int) :
+    CardSource, CardReceiver {
+    private val visibleCards get() = game.state.tableauVisible[idx]
+    private val hiddenCards get() = game.state.tableauHidden[idx]
     val visibleCardCount get() = visibleCards.size
     val hiddenCardCount get() = hiddenCards.size
     val isEmpty get() = visibleCards.isEmpty() && hiddenCards.isEmpty()
 
     fun forEachVisibleCard(block: (Card) -> Unit) {
         visibleCards.forEach(block)
+    }
+
+    override fun transfer(cards: List<Card>, target: CardReceiver, state: SolitaireState): SolitaireState {
+        require(visibleCards.endsWith(cards))
+        return target.receive(cards, state.removeFromTableau(idx, cards.size))
     }
 
     fun forEachHiddenCard(block: (Card) -> Unit) {
@@ -29,19 +35,6 @@ class TableauPile(val solitaireListener: SolitaireListener) : CardSource, CardRe
         }
     }
 
-    fun clear() {
-        visibleCards.clear()
-        hiddenCards.clear()
-    }
-
-    fun addVisibleCard(card: Card) {
-        visibleCards.add(card)
-    }
-
-    fun addHiddenCard(card: Card) {
-        hiddenCards.add(card)
-    }
-
     override fun availableFrom(card: Card): List<Card> {
         if (hiddenCards.contains(card)) {
             return visibleCards
@@ -49,21 +42,10 @@ class TableauPile(val solitaireListener: SolitaireListener) : CardSource, CardRe
         return visibleCards.asSequence().dropWhile { it != card }.toList()
     }
 
-    override fun take(cards: List<Card>): List<Card> {
-        require(
-            isTailOfVisibleCards(cards)
-        )
-        visibleCards.subList(visibleCards.size - cards.size, visibleCards.size).clear()
-        if (visibleCards.isEmpty()) {
-            hiddenCards.removeLastOrNull()?.let { visibleCards.add(it) }
-        }
-        return cards
+    override fun receive(cards: List<Card>, state: SolitaireState): SolitaireState {
+        require(cards.isValidTableau && cards.firstOrNull()?.let { canAdd(it) } == true)
+        return state.addToTableau(idx, cards)
     }
-
-    private fun isTailOfVisibleCards(cards: List<Card>) = (
-            visibleCards.size >= cards.size
-                    && visibleCards.subList(visibleCards.size - cards.size, visibleCards.size) == cards
-            )
 
     override fun canReceive(cards: List<Card>): List<Card> {
         val addableList = cards
@@ -76,11 +58,6 @@ class TableauPile(val solitaireListener: SolitaireListener) : CardSource, CardRe
         } else {
             emptyList()
         }
-    }
-
-    override fun receive(cards: List<Card>) {
-        require(cards.isValidTableau && cards.firstOrNull()?.let { canAdd(it) } == true)
-        visibleCards.addAll(cards)
     }
 
     private val List<Card>.isValidTableau: Boolean
@@ -100,4 +77,6 @@ class TableauPile(val solitaireListener: SolitaireListener) : CardSource, CardRe
             }
             return true
         }
+
+    private fun <T> List<T>.endsWith(tail: List<T>) = tail.size <= size && subList(size - tail.size, size) == tail
 }

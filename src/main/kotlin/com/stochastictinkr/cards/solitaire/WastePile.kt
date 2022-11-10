@@ -2,33 +2,17 @@ package com.stochastictinkr.cards.solitaire
 
 import com.stochastictinkr.cards.standard.Card
 
-class WastePile(val solitaireListener: SolitaireListener) : CardSource {
-    private val cards = mutableListOf<Card>()
-
-    fun clear() {
-        cards.clear()
-    }
-    fun add(card: Card) {
-        cards.add(card)
-    }
-
+class WastePile(private val game: SolitaireGame) : CardSource {
+    val cards get() = game.state.waste
     override fun availableFrom(card: Card): List<Card> =
-        if (cards.lastOrNull() == card) listOf(card) else emptyList()
+        if (game.state.waste.lastOrNull() == card) listOf(card) else emptyList()
 
-    override fun take(cards: List<Card>): List<Card> {
+    fun onVisibleCard(block: (Card) -> Unit) {
+        game.state.waste.lastOrNull()?.let(block)
+    }
+
+    override fun transfer(cards: List<Card>, target: CardReceiver, state: SolitaireState): SolitaireState {
         require(cards.size == 1 && cards.first() == this.cards.lastOrNull())
-        this.cards.removeLast()
-        return cards
-    }
-
-    fun returnCardsTo(stock: StockPile) {
-        val newDeck = cards.reversed()
-        solitaireListener.wasteRestocked(this, newDeck, stock)
-        stock.setDeck(newDeck)
-        cards.clear()
-    }
-
-    fun onVisibleCard(block: (Card)->Unit) {
-        cards.lastOrNull()?.let(block)
+        return target.receive(cards, state.removeFromWaste())
     }
 }

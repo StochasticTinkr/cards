@@ -8,39 +8,48 @@ import kotlin.random.Random
 class SolitaireGame {
     private val listeners = SolitaireListeners()
     private var random = Random(System.nanoTime())
-    val foundations = CardSuit.values().map { FoundationPile(it) }
-    val stock = StockPile(listeners)
-    val tableauPiles = List(7) { TableauPile(listeners) }
-    val wastePile = WastePile(listeners)
+    var state: SolitaireState = newGameState()
+        set(value) {
+            val oldState = field
+            field = value
+            listeners.stateChanged(oldState, value)
+        }
+
+    val foundations = CardSuit.values().map { suit -> FoundationPile(suit, this) }
+    val tableauPiles = List(7) { idx -> TableauPile(listeners, this, idx) }
+    val wastePile = WastePile(this)
 
     private val selectCards = mutableListOf<Card>()
     private var sourceContainer: CardSource? = null
 
     val hasSelection get() = selectCards.isNotEmpty() && sourceContainer != null
-    val numberOfCardsInStock get() = stock.numberOfCards
+    val numberOfCardsInStock get() = state.stock.size
 
     fun newGame() {
-        stock.setDeck(StandardDeck.cards.shuffled(random))
-        foundations.forEach { it.clear() }
-        tableauPiles.forEach { it.clear() }
-        wastePile.clear()
-
-        for (i in tableauPiles.indices) {
-            stock.dealFaceUpTo(tableauPiles[6 - i])
-            for (j in tableauPiles.indices.drop(i + 1)) {
-                stock.dealFaceDownTo(tableauPiles[6 - j])
-            }
-        }
-        stock.dealFaceUpTo(wastePile)
+        state = newGameState()
         clearSelection()
+    }
+
+    private fun newGameState(): SolitaireState {
+        val deck = StandardDeck.cards.shuffled(random).toMutableList()
+        val foundations = List(4) { emptyList<Card>() }
+        val hiddenTableau = List(7) { i ->
+            val cards = mutableListOf<Card>()
+            repeat(6 - i) {
+                cards.add(deck.removeLast())
+            }
+            cards.toList()
+        }
+        val visibleTableau = List(7) { mutableListOf(deck.removeLast()) }
+        val waste = listOf(deck.removeLast())
+        val stock = deck.toList()
+
+        return SolitaireState(foundations, hiddenTableau, visibleTableau, stock, waste)
     }
 
 
     fun pullFromStock() {
-        if (stock.isEmpty) {
-            wastePile.returnCardsTo(stock)
-        }
-        stock.dealFaceUpTo(wastePile)
+        state = state.pullFromStock()
     }
 
     fun moveSelectedCardsTo(target: CardReceiver): Boolean {
@@ -52,9 +61,7 @@ class SolitaireGame {
         if (cardsToMove.isEmpty()) {
             return false
         }
-        val source = sourceContainer!!
-        listeners.cardsMoved(source, cardsToMove, target)
-        target.receive(source.take(cardsToMove))
+        transfer(target, cardsToMove, sourceContainer!!)
         clearSelection()
         return true
     }
@@ -110,14 +117,14 @@ class SolitaireGame {
     }
 
     private fun transfer(target: CardReceiver, cards: List<Card>, source: CardSource) {
-        listeners.cardsMoved(source, cards, target)
-        target.receive(source.take(cards))
+        state = source.transfer(cards, target, state)
     }
 
 
     fun addListener(listener: SolitaireListener) {
         listeners.add(listener)
     }
+
     fun removeListener(listener: SolitaireListener) {
         listeners.remove(listener)
     }

@@ -63,24 +63,8 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         }
     }
 
-    private val solitaireListener = object:SolitaireListener {
-        override fun cardDealtFaceUp(stockPile: StockPile, card: Card, cardReceiver: CardReceiver) {
-            repaint()
-        }
-
-        override fun cardDealtFaceUp(stockPile: StockPile, card: Card, cardReceiver: WastePile) {
-            repaint()
-        }
-
-        override fun cardDealtFaceDown(stockPile: StockPile, card: Card, cardReceiver: CardReceiver) {
-            repaint()
-        }
-
-        override fun wasteRestocked(wastePile: WastePile, cards: List<Card>, stockPile: StockPile) {
-            repaint()
-        }
-
-        override fun cardsMoved(cardSource: CardSource, cards: List<Card>, cardReceiver: CardReceiver) {
+    private val solitaireListener = object : SolitaireListener {
+        override fun stateChanged(oldState: SolitaireState, newState: SolitaireState) {
             repaint()
         }
 
@@ -254,9 +238,9 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
 
         run {
             val position = stockStartPoint
-            cardsVisitor.stockPosition(position, cardWidth, cardHeight, solitaireGame.stock)
-            solitaireGame.stock.forEachCard { card ->
-                cardsVisitor.stockCard(card, position, cardWidth, cardHeight, solitaireGame.stock)
+            cardsVisitor.stockPosition(position, cardWidth, cardHeight, StockPile)
+            solitaireGame.state.stock.forEach { card ->
+                cardsVisitor.stockCard(card, position, cardWidth, cardHeight, StockPile)
                 position.y += stockFanHeight
             }
         }

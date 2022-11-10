@@ -8,24 +8,8 @@ class SolitaireListeners : SolitaireListener {
         listeners.forEach(block)
     }
 
-    override fun cardDealtFaceUp(stockPile: StockPile, card: Card, cardReceiver: CardReceiver) {
-        dispatch { it.cardDealtFaceUp(stockPile, card, cardReceiver) }
-    }
-
-    override fun cardDealtFaceUp(stockPile: StockPile, card: Card, cardReceiver: WastePile) {
-        dispatch { it.cardDealtFaceUp(stockPile, card, cardReceiver) }
-    }
-
-    override fun cardDealtFaceDown(stockPile: StockPile, card: Card, cardReceiver: CardReceiver) {
-        dispatch { it.cardDealtFaceDown(stockPile, card, cardReceiver) }
-    }
-
-    override fun wasteRestocked(wastePile: WastePile, cards: List<Card>, stockPile: StockPile) {
-        dispatch { it.wasteRestocked(wastePile, cards, stockPile) }
-    }
-
-    override fun cardsMoved(cardSource: CardSource, cards: List<Card>, cardReceiver: CardReceiver) {
-        dispatch { it.cardsMoved(cardSource, cards, cardReceiver) }
+    override fun stateChanged(oldState: SolitaireState, newState: SolitaireState) {
+        dispatch { it.stateChanged(oldState, newState) }
     }
 
     override fun selectionChanged(cardSource: CardSource, selectedCards: List<Card>) {
