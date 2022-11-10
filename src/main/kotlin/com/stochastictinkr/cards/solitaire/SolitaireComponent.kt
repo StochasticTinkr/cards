@@ -38,6 +38,11 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             if (!SwingUtilities.isLeftMouseButton(e)) {
                 return
             }
+            if (e.point in stockBounds) {
+                solitaireGame.pullFromStock()
+                repaint()
+                return
+            }
             if (e.clickCount and 1 == 0) {
                 val success = withSourcedCardAt(e.point) { container, card ->
                     solitaireGame.autoMoveCard(container, card)
@@ -48,11 +53,6 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
                 return
             }
             if (e.clickCount == 1) {
-                if (e.point in stockBounds) {
-                    solitaireGame.pullFromStock()
-                    repaint()
-                    return
-                }
                 if (solitaireGame.hasSelection) {
                     val success = withReceiverAt(e.point) { solitaireGame.moveSelectedCardsTo(it) }
                     if (success == true) {

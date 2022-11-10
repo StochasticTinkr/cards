@@ -23,7 +23,7 @@ fun main() {
         solitaireGame.newGame()
 
         val solitaireComponent = SolitaireComponent(solitaireGame)
-        val newGame = action(name = "Name Game", actionCommand = "New Game") {
+        val newGame = action(name = "New Game", actionCommand = "New Game") {
             solitaireGame.newGame()
             solitaireComponent.repaint()
         }
@@ -31,6 +31,7 @@ fun main() {
             exitProcess(0)
         }
         with(jFrame) {
+            defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             menuBar {
                 addMenu {
                     text = "Game"
