@@ -12,6 +12,10 @@ class SolitaireListeners : SolitaireListener {
         dispatch { it.cardDealtFaceUp(stockPile, card, cardReceiver) }
     }
 
+    override fun cardDealtFaceUp(stockPile: StockPile, card: Card, cardReceiver: WastePile) {
+        dispatch { it.cardDealtFaceUp(stockPile, card, cardReceiver) }
+    }
+
     override fun cardDealtFaceDown(stockPile: StockPile, card: Card, cardReceiver: CardReceiver) {
         dispatch { it.cardDealtFaceDown(stockPile, card, cardReceiver) }
     }

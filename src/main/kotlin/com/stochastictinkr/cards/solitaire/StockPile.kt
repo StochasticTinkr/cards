@@ -17,7 +17,10 @@ class StockPile(val solitaireListener: SolitaireListener) : CardLocation {
     }
 
     fun dealFaceUpTo(wastePile: WastePile) {
-        cards.removeLastOrNull()?.let(wastePile::add)
+        cards.removeLastOrNull()?.let { card ->
+            wastePile.add(card)
+            solitaireListener.cardDealtFaceUp(this, card, wastePile)
+        }
     }
 
     fun setDeck(deck: List<Card>) {

@@ -40,15 +40,11 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             }
             if (e.point in stockBounds) {
                 solitaireGame.pullFromStock()
-                repaint()
                 return
             }
             if (e.clickCount and 1 == 0) {
-                val success = withSourcedCardAt(e.point) { container, card ->
+                withSourcedCardAt(e.point) { container, card ->
                     solitaireGame.autoMoveCard(container, card)
-                }
-                if (success == true) {
-                    repaint()
                 }
                 return
             }
@@ -56,22 +52,23 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
                 if (solitaireGame.hasSelection) {
                     val success = withReceiverAt(e.point) { solitaireGame.moveSelectedCardsTo(it) }
                     if (success == true) {
-                        repaint()
                         return
                     }
                 }
                 withSourcedCardAt(e.point) { container, card ->
                     solitaireGame.select(container, card)
-                    repaint()
                 }
                 return
             }
-            println("${e.clickCount}")
         }
     }
 
-    private val solitateListener = object:SolitaireListener {
+    private val solitaireListener = object:SolitaireListener {
         override fun cardDealtFaceUp(stockPile: StockPile, card: Card, cardReceiver: CardReceiver) {
+            repaint()
+        }
+
+        override fun cardDealtFaceUp(stockPile: StockPile, card: Card, cardReceiver: WastePile) {
             repaint()
         }
 
@@ -101,6 +98,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         addMouseListener(mouseListener)
         addMouseMotionListener(mouseListener)
         addMouseWheelListener(mouseListener)
+        solitaireGame.addListener(solitaireListener)
     }
 
     private inline fun <T> withReceiverAt(point: Point, function: (CardReceiver) -> T): T? {
