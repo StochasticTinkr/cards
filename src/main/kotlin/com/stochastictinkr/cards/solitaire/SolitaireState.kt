@@ -10,7 +10,7 @@ data class SolitaireState(
     val waste: List<Card>,
 ) {
     fun removeFromTableau(idx: Int, numCards: Int) =
-        if (tableauVisible[idx].size < numCards || tableauHidden[idx].isEmpty()) {
+        if (tableauVisible[idx].size > numCards || tableauHidden[idx].isEmpty()) {
             copy(
                 tableauVisible = tableauVisible.modify(idx) { it.subList(0, it.size - numCards) })
         } else {
