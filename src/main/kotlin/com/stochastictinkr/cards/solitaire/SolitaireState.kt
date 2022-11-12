@@ -12,7 +12,7 @@ data class SolitaireState(
     fun removeFromTableau(idx: Int, numCards: Int) =
         if (tableauVisible[idx].size > numCards || tableauHidden[idx].isEmpty()) {
             copy(
-                tableauVisible = tableauVisible.modify(idx) { it.subList(0, it.size - numCards) })
+                tableauVisible = tableauVisible.modify(idx) { it.subList(0, it.size - numCards).toList() })
         } else {
             copy(
                 tableauVisible = tableauVisible.modify(idx) { listOf(tableauHidden[idx].last()) },
