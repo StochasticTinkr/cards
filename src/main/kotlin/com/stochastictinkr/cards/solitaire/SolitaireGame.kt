@@ -30,6 +30,8 @@ class SolitaireGame {
 
     fun newGame() {
         state = newGameState()
+        undoHistory.clear()
+        redoHistory.clear()
         clearSelection()
     }
 
