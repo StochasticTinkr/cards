@@ -3,9 +3,13 @@ package com.stochastictinkr.cards.solitaire
 import com.stochastictinkr.cards.CardBacks
 import com.stochastictinkr.cards.CardImages
 import com.stochastictinkr.cards.standard.Card
+import com.stochastictinkr.cards.standard.CardSuit
 import com.stochastictinkr.skywing.awt.geom.point
 import com.stochastictinkr.skywing.awt.geom.roundRectangle
 import com.stochastictinkr.skywing.awt.hints
+import com.stochastictinkr.skywing.rendering.geom.by
+import com.stochastictinkr.skywing.rendering.geom.component1
+import com.stochastictinkr.skywing.rendering.geom.component2
 import com.stochastictinkr.skywing.swing.action
 import java.awt.Color
 import java.awt.Dimension
@@ -13,6 +17,8 @@ import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.Point
 import java.awt.Rectangle
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
@@ -36,6 +42,9 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
     private val tableauVisibleCardFanHeight get() = images.cardHeight / 6
     private val stockFanHeight get() = -images.cardHeight / 90
 
+    private val cardSize get() = images.cardWidth by images.cardHeight
+
+    private val numFoundations = CardSuit.values().size
 
     private val mouseListener = object : MouseAdapter() {
         override fun mousePressed(e: MouseEvent) {
@@ -54,7 +63,9 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             }
             if (e.clickCount == 1) {
                 if (solitaireGame.hasSelection) {
-                    val success = withReceiverAt(e.point) { solitaireGame.moveSelectedCardsTo(it) }
+                    val success = withReceiverAt(e.point) {
+                        solitaireGame.moveSelectedCardsTo(it)
+                    }
                     if (success == true) {
                         return
                     }
@@ -83,6 +94,12 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
 
 
     init {
+        addComponentListener(object : ComponentAdapter() {
+            override fun componentResized(e: ComponentEvent) {
+                images.cardWidth = width / 10
+                repaint()
+            }
+        })
         addMouseListener(mouseListener)
         addMouseMotionListener(mouseListener)
         addMouseWheelListener(mouseListener)
@@ -96,44 +113,49 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         solitaireGame.addListener(solitaireListener)
     }
 
-    private inline fun <T> withReceiverAt(point: Point, function: (CardReceiver) -> T): T? {
-        var result: CardReceiver? = null
-        visitAll(object : CardsVisitor() {
-            override fun foundationPosition(
-                position: Point,
-                width: Int,
-                height: Int,
-                foundationPile: FoundationPile,
-                index: Int,
-            ) {
-                if (point in Rectangle(position, Dimension(width, height))) {
-                    result = foundationPile
-                    done()
-                }
-            }
+    private data class Receiver(val rectangle: Rectangle, val cardReceiver: CardReceiver)
 
-            override fun tableauPosition(
-                position: Point,
-                width: Int,
-                height: Int,
-                tableauPile: TableauPile,
-                index: Int,
-            ) {
-                if (point in Rectangle(
-                        position,
-                        Dimension(
-                            width,
-                            height + tableauPile.hiddenCardCount * tableauHiddenCardFanHeight + tableauPile.visibleCardCount * tableauVisibleCardFanHeight
-                        )
+    private val foundationRectangle
+        get() =
+            Rectangle(
+                point(foundationX, foundationY),
+                (cardSize.width * numFoundations + foundationMargin * numFoundations) by cardSize.height
+            )
+
+    private val tableauRectangles
+        get() = sequence {
+            val (cardWidth, cardHeight) = cardSize
+            repeat(7) { index ->
+                val state = solitaireGame.currentState
+                val tableauHeight = (tableauHiddenCardFanHeight * state.tableauHidden[index].size +
+                        tableauVisibleCardFanHeight * state.tableauVisible[index].size
+                        + cardHeight)
+                yield(
+                    Rectangle(
+                        point(tableauX + (cardWidth + tableauMargin) * index, tableauY),
+                        cardWidth by tableauHeight
                     )
-                ) {
-                    result = tableauPile
-                    done()
-                }
+                )
             }
-        })
-        return result?.let(function)
+        }
+
+    private val receivers = sequence {
+        yield(Receiver(foundationRectangle, Foundations))
+        yieldAll(
+            tableauRectangles.mapIndexed { index, rectangle -> Receiver(rectangle, TableauReceiver(index)) }
+        )
     }
+
+    private fun <T> withReceiverAt(point: Point, function: (CardReceiver) -> T): T? {
+        return receivers
+            .filter { point in it.rectangle }
+            .map { it.cardReceiver }
+            .take(1)
+            .map(function)
+            .firstOrNull()
+    }
+
+    private data class SourcedCard(val rectangle: Rectangle, val cardReceiver: CardSource, val card: Card)
 
     private inline fun <T> withSourcedCardAt(point: Point, function: (CardSource, Card) -> T): T? {
         var highestFound = Int.MAX_VALUE
@@ -155,10 +177,10 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
                 }
             }
 
-            override fun wasteCard(card: Card, position: Point, width: Int, height: Int, wastePile: WastePile) {
+            override fun wasteCard(card: Card, position: Point, width: Int, height: Int) {
                 if (Rectangle(position, Dimension(width, height)).contains(point)) {
                     if (bestFound == null || highestFound < position.y) {
-                        bestFound = wastePile to card
+                        bestFound = WastePile to card
                         highestFound = position.y
                     }
                 }
@@ -180,11 +202,10 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         g.fillRect(0, 0, width, height)
 
         visitAll(object : CardsVisitor() {
-            override fun otherPosition(container: CardLocation, position: Point, width: Int, height: Int) =
+            override fun otherPosition(position: Point, width: Int, height: Int) =
                 g.drawPlacementOutline(position, width, height)
 
             override fun otherVisibleCard(
-                container: CardLocation,
                 card: Card,
                 position: Point,
                 width: Int,
@@ -192,7 +213,6 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             ) = g.drawCard(card, position)
 
             override fun otherHiddenCard(
-                container: CardLocation,
                 card: Card,
                 position: Point,
                 width: Int,
@@ -223,14 +243,13 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
 
 
     private fun visitAll(cardsVisitor: CardsVisitor) {
-        images.cardWidth = width / 10
-        val cardWidth = images.cardWidth
-        val cardHeight = images.cardHeight
-        solitaireGame.foundations.forEachIndexed { index, pile ->
+        val (cardWidth, cardHeight) = cardSize
+        CardSuit.values().forEachIndexed { index, suit ->
             val position = point(foundationX + (cardWidth + foundationMargin) * index, foundationY)
-            cardsVisitor.foundationPosition(position, cardWidth, cardHeight, pile, index)
-            pile.onVisibleCard { visibleCard ->
-                cardsVisitor.foundationCard(visibleCard, position, cardWidth, cardHeight, pile, index)
+            cardsVisitor.foundationPosition(position, cardWidth, cardHeight, index)
+            solitaireGame.currentState.foundations[suit]?.let { rank ->
+                cardsVisitor.foundationCard(Card(suit, rank), position, cardWidth, cardHeight, index)
+
             }
         }
 
@@ -249,18 +268,18 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
 
         run {
             val position = stockStartPoint
-            cardsVisitor.stockPosition(position, cardWidth, cardHeight, StockPile)
+            cardsVisitor.stockPosition(position, cardWidth, cardHeight)
             solitaireGame.currentState.stock.forEach { card ->
-                cardsVisitor.stockCard(card, position, cardWidth, cardHeight, StockPile)
+                cardsVisitor.stockCard(card, position, cardWidth, cardHeight)
                 position.y += stockFanHeight
             }
         }
 
         run {
             val position = point(width - cardWidth * 2 - 8, tableauY + cardHeight + 10)
-            cardsVisitor.wastePosition(position, cardWidth, cardHeight, solitaireGame.wastePile)
-            solitaireGame.wastePile.onVisibleCard { card ->
-                cardsVisitor.wasteCard(card, position, cardWidth, cardHeight, solitaireGame.wastePile)
+            cardsVisitor.wastePosition(position, cardWidth, cardHeight)
+            solitaireGame.currentState.waste.lastOrNull()?.let { card ->
+                cardsVisitor.wasteCard(card, position, cardWidth, cardHeight)
             }
         }
     }
@@ -268,11 +287,8 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
     private val stockStartPoint get() = point(width - images.cardWidth * 2 - 8, tableauY)
 
     private abstract class CardsVisitor {
-        var shouldContinue = true
-
-        open fun otherPosition(container: CardLocation, position: Point, width: Int, height: Int) {}
+        open fun otherPosition(position: Point, width: Int, height: Int) {}
         open fun otherVisibleCard(
-            container: CardLocation,
             card: Card,
             position: Point,
             width: Int,
@@ -281,7 +297,6 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         }
 
         open fun otherHiddenCard(
-            container: CardLocation,
             card: Card,
             position: Point,
             width: Int,
@@ -293,10 +308,9 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             position: Point,
             width: Int,
             height: Int,
-            foundationPile: FoundationPile,
             index: Int,
         ) {
-            otherPosition(foundationPile, position, width, height)
+            otherPosition(position, width, height)
         }
 
         open fun tableauPosition(
@@ -306,15 +320,15 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             tableauPile: TableauPile,
             index: Int,
         ) {
-            otherPosition(tableauPile, position, width, height)
+            otherPosition(position, width, height)
         }
 
-        open fun stockPosition(position: Point, width: Int, height: Int, stockPile: StockPile) {
-            otherPosition(stockPile, position, width, height)
+        open fun stockPosition(position: Point, width: Int, height: Int) {
+            otherPosition(position, width, height)
         }
 
-        open fun wastePosition(position: Point, width: Int, height: Int, wastePile: WastePile) {
-            otherPosition(wastePile, position, width, height)
+        open fun wastePosition(position: Point, width: Int, height: Int) {
+            otherPosition(position, width, height)
         }
 
         open fun foundationCard(
@@ -322,10 +336,9 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             position: Point,
             width: Int,
             height: Int,
-            foundationPile: FoundationPile,
             index: Int,
         ) {
-            otherVisibleCard(foundationPile, card, position, width, height)
+            otherVisibleCard(card, position, width, height)
         }
 
         open fun visibleTableauCard(
@@ -336,7 +349,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             tableauPile: TableauPile,
             index: Int,
         ) {
-            otherVisibleCard(tableauPile, card, position, width, height)
+            otherVisibleCard(card, position, width, height)
         }
 
         open fun hiddenTableauCard(
@@ -347,19 +360,15 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             tableauPile: TableauPile,
             index: Int,
         ) {
-            otherHiddenCard(tableauPile, card, position, width, height)
+            otherHiddenCard(card, position, width, height)
         }
 
-        open fun stockCard(card: Card, position: Point, width: Int, height: Int, stock: StockPile) {
-            otherHiddenCard(stock, card, position, width, height)
+        open fun stockCard(card: Card, position: Point, width: Int, height: Int) {
+            otherHiddenCard(card, position, width, height)
         }
 
-        open fun wasteCard(card: Card, position: Point, width: Int, height: Int, wastePile: WastePile) {
-            otherVisibleCard(wastePile, card, position, width, height)
-        }
-
-        fun done() {
-            shouldContinue = false
+        open fun wasteCard(card: Card, position: Point, width: Int, height: Int) {
+            otherVisibleCard(card, position, width, height)
         }
     }
 

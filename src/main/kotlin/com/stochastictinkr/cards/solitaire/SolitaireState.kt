@@ -1,18 +1,24 @@
 package com.stochastictinkr.cards.solitaire
 
 import com.stochastictinkr.cards.standard.Card
+import com.stochastictinkr.cards.standard.CardRank
+import com.stochastictinkr.cards.standard.CardSuit
 
 data class SolitaireState(
-    val foundations: List<List<Card>>,
+    val foundations: Map<CardSuit, CardRank?>,
     val tableauHidden: List<List<Card>>,
     val tableauVisible: List<List<Card>>,
     val stock: List<Card>,
     val waste: List<Card>,
 ) {
+    fun foundationCanReceive(card: Card) =
+        foundations[card.suit]?.isJustBefore(card.rank) ?: (card.rank == CardRank.ACE)
+
     fun removeFromTableau(idx: Int, numCards: Int) =
         if (tableauVisible[idx].size > numCards || tableauHidden[idx].isEmpty()) {
             copy(
-                tableauVisible = tableauVisible.modify(idx) { it.subList(0, it.size - numCards).toList() })
+                tableauVisible = tableauVisible.modify(idx) { it.subList(0, it.size - numCards).toList() }
+            )
         } else {
             copy(
                 tableauVisible = tableauVisible.modify(idx) { listOf(tableauHidden[idx].last()) },
@@ -25,10 +31,11 @@ data class SolitaireState(
             tableauVisible = tableauVisible.modify(idx) { it + cards }
         )
 
-    fun addToFoundation(idx: Int, card: Card) =
-        copy(
-            foundations = foundations.modify(idx) { it + card }
-        )
+    fun addToFoundation(card: Card): SolitaireState {
+        require(foundationCanReceive(card))
+        return copy(foundations = foundations + mapOf(card.suit to card.rank))
+    }
+
 
     fun removeFromWaste() =
         copy(waste = waste.subList(0, waste.size - 1))

@@ -22,7 +22,7 @@ class CardImages {
     val cardAspectRatio = cardPainters.values.first().bounds.run { width / height }
     var cardWidth: Int = cardPainters.values.first().bounds.width.toInt()
         set(value) {
-            if (value == 0) {
+            if (value <= 0) {
                 if (field != 1) {
                     field = 1
                     cache.clear()

@@ -1,7 +1,6 @@
 package com.stochastictinkr.cards.solitaire
 
 import com.stochastictinkr.cards.standard.Card
-import com.stochastictinkr.cards.standard.CardSuit
 import com.stochastictinkr.cards.standard.StandardDeck
 import kotlin.random.Random
 
@@ -18,10 +17,8 @@ class SolitaireGame {
     private val redoHistory = mutableListOf<SolitaireState>()
 
     val currentState: SolitaireState get() = state
-    val foundations = CardSuit.values().map { suit -> FoundationPile(suit, this) }
     val tableauPiles = List(7) { idx -> TableauPile(this, idx) }
-    val wastePile = WastePile(this)
-
+    private val tableauReceivers = List(7, ::TableauReceiver)
     private val selectCards = mutableListOf<Card>()
     private var sourceContainer: CardSource? = null
 
@@ -37,7 +34,6 @@ class SolitaireGame {
 
     private fun newGameState(): SolitaireState {
         val deck = StandardDeck.cards.shuffled(random).toMutableList()
-        val foundations = List(4) { emptyList<Card>() }
         val hiddenTableau = List(7) { i ->
             val cards = mutableListOf<Card>()
             repeat(6 - i) {
@@ -49,7 +45,7 @@ class SolitaireGame {
         val waste = listOf(deck.removeLast())
         val stock = deck.toList()
 
-        return SolitaireState(foundations, hiddenTableau, visibleTableau, stock, waste)
+        return SolitaireState(mapOf(), hiddenTableau, visibleTableau, stock, waste)
     }
 
 
@@ -121,18 +117,17 @@ class SolitaireGame {
         if (availableCards.isEmpty()) {
             return false
         }
-        val foundationTarget = foundations.map { it to it.canReceive(availableCards, currentState) }
-            .firstOrNull { (_, receivable) -> receivable.isNotEmpty() }
-        if (foundationTarget != null) {
-            val (receiver, cards) = foundationTarget
-            transfer(receiver, cards, container)
+        val foundationsCanReceive = Foundations.canReceive(availableCards, currentState)
+        if (foundationsCanReceive.isNotEmpty()) {
+            transfer(Foundations, foundationsCanReceive, container)
             return true
         }
         val tableauTarget =
-            tableauPiles.asSequence()
+            tableauReceivers.asSequence()
                 .map { it to it.canReceive(availableCards, currentState) }
                 .filter { (_, receivable) -> receivable.isNotEmpty() }
                 .maxByOrNull { (_, receivable) -> receivable.size }
+
         if (tableauTarget != null) {
             val (receiver, cards) = tableauTarget
             transfer(receiver, cards, container)
