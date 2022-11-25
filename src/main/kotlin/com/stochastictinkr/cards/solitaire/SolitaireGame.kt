@@ -17,8 +17,6 @@ class SolitaireGame {
     private val redoHistory = mutableListOf<SolitaireState>()
 
     val currentState: SolitaireState get() = state
-    val tableauPiles = List(7) { idx -> TableauPile(this, idx) }
-    private val tableauReceivers = List(7, ::TableauReceiver)
     private val selectCards = mutableListOf<Card>()
     private var sourceContainer: CardSource? = null
 
@@ -123,7 +121,7 @@ class SolitaireGame {
             return true
         }
         val tableauTarget =
-            tableauReceivers.asSequence()
+            List(7, ::TableauReceiver).asSequence()
                 .map { it to it.canReceive(availableCards, currentState) }
                 .filter { (_, receivable) -> receivable.isNotEmpty() }
                 .maxByOrNull { (_, receivable) -> receivable.size }
