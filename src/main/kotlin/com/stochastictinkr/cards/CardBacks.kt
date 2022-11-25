@@ -1,16 +1,16 @@
 package com.stochastictinkr.cards
 
-enum class CardBacks(val filename: String) {
-    ABSTRACT("abstract"),
-    CLOUDS("abstract_clouds"),
-    HIGHWAY("abstract_scene"),
-    ASTRONAUT("astronaut"),
-    BLUE("blue"),
-    BLUE2("blue2"),
-    CARS("cars"),
-    CASTLE("castle"),
-//    FISH("fish"),
-    FROG("frog"),
-    RED("red"),
-    RED2("red2"),
+enum class CardBacks(val filename: String, val displayName:String) {
+    ABSTRACT("abstract", "Abstract"),
+    CLOUDS("abstract_clouds", "Abstract Clouds"),
+    HIGHWAY("abstract_scene", "Abstract Scene"),
+    ASTRONAUT("astronaut", "Astronaut"),
+    BLUE("blue", "Blue"),
+    BLUE2("blue2", "Blue2"),
+    CARS("cars", "Cars"),
+    CASTLE("castle", "Castle"),
+//    FISH("fish", "Fish"),
+    FROG("frog", "Frog"),
+    RED("red", "Red"),
+    RED2("red2", "Red2"),
 }

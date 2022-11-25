@@ -30,7 +30,11 @@ import kotlin.math.min
 
 
 class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
-    private var cardBack = CardBacks.BLUE
+    var cardBack = CardBacks.BLUE
+        set(value) {
+            field = value;
+            repaint()
+        }
     private val images = CardImages()
     private val foundationMargin = 15
     private val foundationX get() = width / 2 - (images.cardWidth * 2 + foundationMargin + foundationMargin / 2)

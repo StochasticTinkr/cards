@@ -1,5 +1,6 @@
 package com.stochastictinkr.cards.solitaire
 
+import com.stochastictinkr.cards.CardBacks
 import com.stochastictinkr.skywing.initSkywing
 import com.stochastictinkr.skywing.swing.action
 import com.stochastictinkr.skywing.swing.addItem
@@ -14,7 +15,7 @@ fun main() {
     initSkywing("Solitaire")
     invokeLater {
         val jFrame = JFrame()
-        with (jFrame.rootPane) {
+        with(jFrame.rootPane) {
             putClientProperty("apple.awt.fullscreenable", true)
             putClientProperty("apple.awt.fullWindowContent", true)
             putClientProperty("apple.awt.transparentTitleBar", true)
@@ -30,6 +31,7 @@ fun main() {
         val quit = action(name = "Quit") {
             exitProcess(0)
         }
+
         with(jFrame) {
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             menuBar {
@@ -38,6 +40,16 @@ fun main() {
                     addItem(newGame)
                     addSeparator()
                     addItem(quit)
+                }
+                addMenu {
+                    text = "Deck"
+                    CardBacks.values().map { cardBack ->
+                        addItem(
+                            action = action(name = cardBack.displayName) {
+                                solitaireComponent.cardBack = cardBack
+                            }
+                        )
+                    }
                 }
             }
             add(solitaireComponent)
