@@ -25,6 +25,8 @@ import java.awt.event.MouseEvent
 import javax.swing.JComponent
 import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
+import kotlin.math.max
+import kotlin.math.min
 
 
 class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
@@ -165,24 +167,47 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             state.waste.lastOrNull()?.let { card ->
                 yield(SourcedCard(wasteRectangle, WastePile, card))
             }
+            var x = tableauX
             repeat(7) { idx ->
-                val x = tableauX + idx * (tableauMargin + cardSize.width)
-                val y = tableauY + tableauHiddenCardFanHeight * state.tableauHidden[idx].size
+                val position = Rectangle(
+                    x,
+                    tableauY + tableauHiddenCardFanHeight * state.tableauHidden[idx].size,
+                    cardSize.width,
+                    cardSize.height
+                )
                 state.tableauVisible[idx].forEachIndexed { index, card ->
-                    val rectangle = Rectangle(
-                        point(x, y + tableauVisibleCardFanHeight * index),
-                        cardSize
-                    )
-                    yield(SourcedCard(rectangle, TableauSource(idx), card))
+                    yield(SourcedCard(Rectangle(position), TableauSource(idx), card))
+                    position.y += tableauVisibleCardFanHeight
                 }
+                x += tableauMargin + cardSize.width
             }
         }
 
     private fun <T> withSourcedCardAt(point: Point, function: (CardSource, Card) -> T): T? {
-        return sourcedCards
-            .filter { point in it.rectangle }
-            .lastOrNull()
-            ?.let { function(it.cardSource, it.card) }
+        val state = solitaireGame.currentState
+        if (point in wasteRectangle) {
+            return state.waste.lastOrNull()?.let { card -> function(WastePile, card) }
+        }
+        val index = (point.x - tableauX) / (tableauMargin + cardSize.width)
+        if (index !in state.tableauVisible.indices || point.y < tableauY) {
+            return null
+        }
+
+        val numHiddenCards = state.tableauHidden[index].size
+        val visibleCards = state.tableauVisible[index]
+        val tableauHeight = cardSize.height +
+                (tableauHiddenCardFanHeight * numHiddenCards + tableauVisibleCardFanHeight * visibleCards.size)
+        val offsetY = point.y - tableauY
+        if (offsetY > tableauHeight) {
+            return null
+        }
+        val cardIndex = min(
+            max(
+                0,
+                (offsetY - (numHiddenCards * tableauHiddenCardFanHeight)) / tableauVisibleCardFanHeight
+            ), visibleCards.size - 1
+        )
+        return function(TableauSource(index), visibleCards[cardIndex])
     }
 
     override fun paintComponent(g: Graphics) {
