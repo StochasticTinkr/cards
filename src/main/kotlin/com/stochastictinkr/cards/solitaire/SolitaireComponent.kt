@@ -193,25 +193,41 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         }
         g.color = Color(70, 120, 80)
         g.fillRect(0, 0, width, height)
+        val state = solitaireGame.currentState
 
-        visitAll(object : CardsVisitor() {
-            override fun otherPosition(position: Point, width: Int, height: Int) =
-                g.drawPlacementOutline(position, width, height)
+        CardSuit.values().forEachIndexed { index, suit ->
+            val position = point(foundationX + (cardSize.width + foundationMargin) * index, foundationY)
+            g.drawPlacementOutline(position)
+            state.foundations[suit]?.let { rank ->
+                g.drawCard(Card(suit, rank), position)
+            }
+        }
+        repeat(7) { index ->
+            val position = point(tableauX + (cardSize.width + tableauMargin) * index, tableauY)
+            g.drawPlacementOutline(position)
+            state.tableauHidden[index].forEach { _ ->
+                g.drawCardBack(position)
+                position.y += tableauHiddenCardFanHeight
+            }
+            state.tableauVisible[index].forEach { card ->
+                g.drawCard(card, position)
+                position.y += tableauVisibleCardFanHeight
+            }
+        }
 
-            override fun otherVisibleCard(
-                card: Card,
-                position: Point,
-                width: Int,
-                height: Int,
-            ) = g.drawCard(card, position)
+        run {
+            val position = stockStartPoint
+            g.drawPlacementOutline(position)
+            repeat(solitaireGame.currentState.stock.size) { card ->
+                g.drawCardBack(position)
+                position.y += stockFanHeight
+            }
+        }
 
-            override fun otherHiddenCard(
-                card: Card,
-                position: Point,
-                width: Int,
-                height: Int,
-            ) = g.drawCardBack(position)
-        })
+        g.drawPlacementOutline(wastePosition)
+        solitaireGame.currentState.waste.lastOrNull()?.let { card ->
+            g.drawCard(card, wastePosition)
+        }
     }
 
     private fun Graphics2D.drawCardBack(position: Point) {
@@ -234,139 +250,12 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             return Rectangle(startPoint.x, startPoint.y + movement, images.cardWidth, images.cardHeight - movement)
         }
 
-
-    private fun visitAll(cardsVisitor: CardsVisitor) {
-        val (cardWidth, cardHeight) = cardSize
-        val state = solitaireGame.currentState
-        CardSuit.values().forEachIndexed { index, suit ->
-            val position = point(foundationX + (cardWidth + foundationMargin) * index, foundationY)
-            cardsVisitor.foundationPosition(position, cardWidth, cardHeight, index)
-            state.foundations[suit]?.let { rank ->
-                cardsVisitor.foundationCard(Card(suit, rank), position, cardWidth, cardHeight, index)
-
-            }
-        }
-
-        repeat(7) { index ->
-            val position = point(tableauX + (cardWidth + tableauMargin) * index, tableauY)
-            cardsVisitor.tableauPosition(position, cardWidth, cardHeight, index)
-            state.tableauHidden[index].forEach { card ->
-                cardsVisitor.hiddenTableauCard(card, position, cardWidth, cardHeight, index)
-                position.y += tableauHiddenCardFanHeight
-            }
-            state.tableauVisible[index].forEach { card ->
-                cardsVisitor.visibleTableauCard(card, position, cardWidth, cardHeight, index)
-                position.y += tableauVisibleCardFanHeight
-            }
-        }
-
-        run {
-            val position = stockStartPoint
-            cardsVisitor.stockPosition(position, cardWidth, cardHeight)
-            solitaireGame.currentState.stock.forEach { card ->
-                cardsVisitor.stockCard(card, position, cardWidth, cardHeight)
-                position.y += stockFanHeight
-            }
-        }
-
-        run {
-            val position = point(width - cardSize.width * 2 - 8, tableauY + cardSize.height + 10)
-            cardsVisitor.wastePosition(position, cardWidth, cardHeight)
-            solitaireGame.currentState.waste.lastOrNull()?.let { card ->
-                cardsVisitor.wasteCard(card, position, cardWidth, cardHeight)
-            }
-        }
-    }
-
     private val stockStartPoint get() = point(width - images.cardWidth * 2 - 8, tableauY)
 
-    private abstract class CardsVisitor {
-        open fun otherPosition(position: Point, width: Int, height: Int) {}
-        open fun otherVisibleCard(
-            card: Card,
-            position: Point,
-            width: Int,
-            height: Int,
-        ) {
-        }
-
-        open fun otherHiddenCard(
-            card: Card,
-            position: Point,
-            width: Int,
-            height: Int,
-        ) {
-        }
-
-        open fun foundationPosition(
-            position: Point,
-            width: Int,
-            height: Int,
-            index: Int,
-        ) {
-            otherPosition(position, width, height)
-        }
-
-        open fun tableauPosition(
-            position: Point,
-            width: Int,
-            height: Int,
-            index: Int,
-        ) {
-            otherPosition(position, width, height)
-        }
-
-        open fun stockPosition(position: Point, width: Int, height: Int) {
-            otherPosition(position, width, height)
-        }
-
-        open fun wastePosition(position: Point, width: Int, height: Int) {
-            otherPosition(position, width, height)
-        }
-
-        open fun foundationCard(
-            card: Card,
-            position: Point,
-            width: Int,
-            height: Int,
-            index: Int,
-        ) {
-            otherVisibleCard(card, position, width, height)
-        }
-
-        open fun visibleTableauCard(
-            card: Card,
-            position: Point,
-            width: Int,
-            height: Int,
-            index: Int,
-        ) {
-            otherVisibleCard(card, position, width, height)
-        }
-
-        open fun hiddenTableauCard(
-            card: Card,
-            position: Point,
-            width: Int,
-            height: Int,
-            index: Int,
-        ) {
-            otherHiddenCard(card, position, width, height)
-        }
-
-        open fun stockCard(card: Card, position: Point, width: Int, height: Int) {
-            otherHiddenCard(card, position, width, height)
-        }
-
-        open fun wasteCard(card: Card, position: Point, width: Int, height: Int) {
-            otherVisibleCard(card, position, width, height)
-        }
-    }
-
-    private fun Graphics2D.drawPlacementOutline(position: Point, cardWidth: Int, cardHeight: Int) {
+    private fun Graphics2D.drawPlacementOutline(position: Point) {
         color = Color.BLACK
         draw(roundRectangle {
-            setRoundRect(position.x - 2.0, position.y - 2.0, cardWidth + 4.0, cardHeight + 4.0, 4.0, 4.0)
+            setRoundRect(position.x - 2.0, position.y - 2.0, cardSize.width + 4.0, cardSize.height + 4.0, 4.0, 4.0)
         })
     }
 }
