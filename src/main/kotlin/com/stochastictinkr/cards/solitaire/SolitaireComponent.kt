@@ -41,16 +41,18 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
     private val cardSize get() = images.cardWidth by images.cardHeight
     private val numFoundations = CardSuit.values().size
 
-    // Layout parameters
+    // Layout
     private val foundationMargin = 15
     private val foundationX get() = width / 2 - (images.cardWidth * 2 + foundationMargin + foundationMargin / 2)
     private val foundationY = 15
+
     private val tableauMargin = 12
     private val tableauX = 8
     private val tableauY get() = foundationY + images.cardHeight + foundationMargin + tableauMargin
     private val tableauHiddenCardFanHeight get() = images.cardHeight / 13
     private val tableauVisibleCardFanHeight get() = images.cardHeight / 6
 
+    private val stockStartPoint get() = point(width - images.cardWidth * 2 - 8, tableauY)
     private val stockFanHeight get() = -images.cardHeight / 90
 
     private val wastePosition get() = point(width - cardSize.width * 2 - 8, tableauY + cardSize.height + 10)
@@ -105,7 +107,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         }
     }
 
-
+    // Set up the listeners.
     init {
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent) {
@@ -126,6 +128,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         solitaireGame.addListener(solitaireListener)
     }
 
+    // Painting functions
     override fun paintComponent(g: Graphics) {
         require(g is Graphics2D)
         g.hints {
@@ -204,7 +207,9 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         })
     }
 
-
+    /**
+     * @return The card receiver at the given point, or null if the point isn't on a card receiver
+     */
     private fun findReceiverAt(point: Point): CardReceiver? {
         val foundationRectangle = Rectangle(
             foundationX, foundationY,
@@ -232,6 +237,9 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         return null
     }
 
+    /**
+     * @return the SourcedCard at the given point, or null if there is none.
+     */
     private fun findCardAt(point: Point): SourcedCard? {
         val state = solitaireGame.currentState
         if (point in Rectangle(wastePosition, cardSize)) {
@@ -258,6 +266,4 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         )
         return SourcedCard(TableauSource(index), visibleCards[cardIndex])
     }
-
-    private val stockStartPoint get() = point(width - images.cardWidth * 2 - 8, tableauY)
 }
