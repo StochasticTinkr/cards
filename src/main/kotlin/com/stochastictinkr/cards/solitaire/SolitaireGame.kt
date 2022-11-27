@@ -85,8 +85,8 @@ class SolitaireGame {
         return true
     }
 
-
-    fun select(container: CardSource, card: Card) {
+    fun select(from: SourcedCard) {
+        val (container, card) = from
         selectCards.clear()
         val cards = container.availableFrom(card, currentState)
         selectCards.addAll(cards)
@@ -106,10 +106,8 @@ class SolitaireGame {
 
     fun isSelected(card: Card) = selectCards.contains(card)
 
-    fun autoMoveCard(
-        container: CardSource,
-        card: Card,
-    ): Boolean {
+    fun autoMoveCard(from: SourcedCard): Boolean {
+        val (container, card) = from
         clearSelection()
         val availableCards = container.availableFrom(card, currentState)
         if (availableCards.isEmpty()) {
