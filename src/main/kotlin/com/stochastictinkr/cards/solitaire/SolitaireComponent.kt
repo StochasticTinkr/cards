@@ -153,9 +153,9 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
 
     private fun Graphics2D.paintStock() {
         drawPlacementOutline(stockStartPoint)
-        solitaireGame.currentState.stock.indices.map { it * stockFanHeight }.forEach { offset ->
-            drawCardBack(stockStartPoint.apply {
-                y += offset
+        solitaireGame.currentState.stock.forEachIndexed { index, card ->
+            drawCardBack(card, stockStartPoint.apply {
+                y += index * stockFanHeight
             })
         }
     }
@@ -166,8 +166,8 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         repeat(7) { tableauNumber ->
             val position = point(tableauX + (cardSize.width + tableauMargin) * tableauNumber, tableauY)
             drawPlacementOutline(position)
-            repeat(hiddenCards[tableauNumber].size) {
-                drawCardBack(position)
+            hiddenCards[tableauNumber].forEach { card ->
+                drawCardBack(card, position)
                 position.y += tableauHiddenCardFanHeight
             }
             visibleCards[tableauNumber].forEach { card ->
@@ -187,17 +187,18 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         }
     }
 
-    private fun Graphics2D.drawCardBack(position: Point) {
-        drawImage(images[cardBack], position.x, position.y, null)
+    private fun Graphics2D.drawCardBack(card: Card, position: Point) {
+        val model = CardDisplayModel()
+        model.cards[card] =
+            CardDisplayModel.CardDisplay(CardDisplayModel.Position(position), CardDisplayModel.Flip(0f), 1f)
+        model.draw(card, this, solitaireGame.isSelected(card), images, cardBack)
     }
 
     private fun Graphics2D.drawCard(card: Card, position: Point) {
-        val image = images[card]
-        if (solitaireGame.isSelected(card)) {
-            paint = Color.YELLOW
-            fillRoundRect(position.x - 1, position.y - 1, image.width + 2, image.height + 2, 5, 5)
-        }
-        drawImage(image, position.x, position.y, null)
+        val model = CardDisplayModel()
+        model.cards[card] =
+            CardDisplayModel.CardDisplay(CardDisplayModel.Position(position), CardDisplayModel.Flip(1f), 1f)
+        model.draw(card, this, solitaireGame.isSelected(card), images, cardBack)
     }
 
     private fun Graphics2D.drawPlacementOutline(position: Point) {
