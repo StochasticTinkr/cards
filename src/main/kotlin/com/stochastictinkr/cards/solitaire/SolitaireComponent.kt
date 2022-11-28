@@ -26,6 +26,7 @@ import java.awt.event.MouseEvent
 import javax.swing.JComponent
 import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
+import javax.swing.Timer
 import kotlin.math.max
 import kotlin.math.min
 
@@ -56,6 +57,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
     private val stockFanHeight get() = -images.cardHeight / 90
 
     private val wastePosition get() = point(width - cardSize.width * 2 - 8, tableauY + cardSize.height + 10)
+    private val displayModel = CardDisplayModel()
 
     // Listeners
     private val mouseListener = object : MouseAdapter() {
@@ -95,6 +97,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
 
     private val solitaireListener = object : SolitaireListener {
         override fun stateChanged(oldState: SolitaireState, newState: SolitaireState) {
+            updateDisplay()
             repaint()
         }
 
@@ -112,6 +115,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(e: ComponentEvent) {
                 images.cardWidth = width / 10
+                updateDisplay()
                 repaint()
             }
         })
@@ -126,7 +130,54 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         actionMap.put("Undo", action { solitaireGame.undo() })
         actionMap.put("Redo", action { solitaireGame.redo() })
         solitaireGame.addListener(solitaireListener)
+        updateDisplay()
+        Timer(125) {
+            displayModel.update()
+            repaint()
+        }.apply {
+            isRepeats = true
+            delay = 20
+            start()
+        }
     }
+
+    private fun updateDisplay() {
+        CardSuit.values().forEachIndexed { index, suit ->
+            val position = point(foundationX + (cardSize.width + foundationMargin) * index, foundationY)
+            solitaireGame.currentState.foundations[suit]?.let { rank ->
+                displayModel[Card(suit, rank)].setTarget(position, true)
+            }
+        }
+        solitaireGame.currentState.waste.lastOrNull()?.let { card ->
+            displayModel[card].setTarget(wastePosition, true)
+        }
+        solitaireGame.currentState.stock.forEachIndexed { index, card ->
+            displayModel[card].setTarget(stockStartPoint.apply {
+                y += index * stockFanHeight
+            }, false)
+        }
+        val hiddenCards = solitaireGame.currentState.tableauHidden
+        val visibleCards = solitaireGame.currentState.tableauVisible
+        repeat(7) { tableauNumber ->
+            hiddenCards[tableauNumber].forEachIndexed { index, card ->
+                val position = point(
+                    tableauX + (cardSize.width + tableauMargin) * tableauNumber,
+                    tableauY + index * tableauHiddenCardFanHeight
+                )
+                displayModel[card].setTarget(position, false)
+            }
+            val startY = tableauY + hiddenCards[tableauNumber].size * tableauHiddenCardFanHeight
+            visibleCards[tableauNumber].forEachIndexed { index, card ->
+                val position = point(
+                    tableauX + (cardSize.width + tableauMargin) * tableauNumber,
+                    startY + index * tableauVisibleCardFanHeight
+                )
+                displayModel[card].setTarget(position, true)
+            }
+        }
+
+    }
+
 
     // Painting functions
     override fun paintComponent(g: Graphics) {
@@ -146,17 +197,17 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
 
     private fun Graphics2D.paintWaste() {
         drawPlacementOutline(wastePosition)
-        solitaireGame.currentState.waste.lastOrNull()?.let { card ->
-            drawCard(card, wastePosition)
-        }
+        val waste = solitaireGame.currentState.waste
+        waste.subList(max(0, waste.size - 2), waste.size)
+            .forEach { card ->
+                displayModel.draw(card, this, solitaireGame.isSelected(card), images, cardBack)
+            }
     }
 
     private fun Graphics2D.paintStock() {
         drawPlacementOutline(stockStartPoint)
         solitaireGame.currentState.stock.forEachIndexed { index, card ->
-            drawCardBack(card, stockStartPoint.apply {
-                y += index * stockFanHeight
-            })
+            displayModel.draw(card, this, false, images, cardBack)
         }
     }
 
@@ -164,41 +215,23 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         val hiddenCards = solitaireGame.currentState.tableauHidden
         val visibleCards = solitaireGame.currentState.tableauVisible
         repeat(7) { tableauNumber ->
-            val position = point(tableauX + (cardSize.width + tableauMargin) * tableauNumber, tableauY)
-            drawPlacementOutline(position)
+            drawPlacementOutline(point(tableauX + (cardSize.width + tableauMargin) * tableauNumber, tableauY))
             hiddenCards[tableauNumber].forEach { card ->
-                drawCardBack(card, position)
-                position.y += tableauHiddenCardFanHeight
+                displayModel.draw(card, this, false, images, cardBack)
             }
             visibleCards[tableauNumber].forEach { card ->
-                drawCard(card, position)
-                position.y += tableauVisibleCardFanHeight
+                displayModel.draw(card, this, false, images, cardBack)
             }
         }
     }
 
     private fun Graphics2D.paintFoundation() {
         CardSuit.values().forEachIndexed { index, suit ->
-            val position = point(foundationX + (cardSize.width + foundationMargin) * index, foundationY)
-            drawPlacementOutline(position)
+            drawPlacementOutline(point(foundationX + (cardSize.width + foundationMargin) * index, foundationY))
             solitaireGame.currentState.foundations[suit]?.let { rank ->
-                drawCard(Card(suit, rank), position)
+                displayModel.draw(Card(suit, rank), this, false, images, cardBack)
             }
         }
-    }
-
-    private fun Graphics2D.drawCardBack(card: Card, position: Point) {
-        val model = CardDisplayModel()
-        model.cards[card] =
-            CardDisplayModel.CardDisplay(CardDisplayModel.Position(position), CardDisplayModel.Flip(0f), 1f)
-        model.draw(card, this, solitaireGame.isSelected(card), images, cardBack)
-    }
-
-    private fun Graphics2D.drawCard(card: Card, position: Point) {
-        val model = CardDisplayModel()
-        model.cards[card] =
-            CardDisplayModel.CardDisplay(CardDisplayModel.Position(position), CardDisplayModel.Flip(1f), 1f)
-        model.draw(card, this, solitaireGame.isSelected(card), images, cardBack)
     }
 
     private fun Graphics2D.drawPlacementOutline(position: Point) {

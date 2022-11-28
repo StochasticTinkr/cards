@@ -5,6 +5,7 @@ import com.stochastictinkr.cards.CardImages
 import com.stochastictinkr.cards.standard.Card
 import com.stochastictinkr.skywing.awt.geom.makeTransform
 import com.stochastictinkr.skywing.awt.geom.plus
+import com.stochastictinkr.skywing.awt.geom.point
 import com.stochastictinkr.skywing.awt.geom.roundRectangle
 import com.stochastictinkr.skywing.awt.geom.times
 import java.awt.Color
@@ -42,6 +43,8 @@ class CardDisplayModel {
 
     val cards: MutableMap<Card, CardDisplay> = LinkedHashMap()
 
+    operator fun get(card: Card) = cards.computeIfAbsent(card) { CardDisplay(Position(point(0.0, 0.0)), Flip(0f), 0f) }
+
     fun update() {
         cards.values.forEach(CardDisplay::update)
     }
@@ -57,8 +60,8 @@ class CardDisplayModel {
         }
 
         val transform = makeTransform {
+            translate(point.x, point.y + images.cardHeight * (1 - abs(.5 - flip) * 2))
             scale(1.0, abs(.5 - flip) * 2)
-            translate(point.x, point.y)
         }
         if (isSelected) {
             g.paint = Color.YELLOW
