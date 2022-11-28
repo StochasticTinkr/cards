@@ -144,7 +144,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             }
         }.apply {
             isRepeats = true
-            delay = 20
+            delay = 13
             start()
         }
     }

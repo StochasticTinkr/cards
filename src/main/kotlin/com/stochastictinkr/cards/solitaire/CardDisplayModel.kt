@@ -31,7 +31,7 @@ class CardDisplayModel {
         val point get() = position[delta]
         val flipAmount get() = flip[delta]
         fun update() {
-            delta = min(delta + .125f, 1f)
+            delta = min(delta + .05f, 1f)
         }
 
         fun setTarget(position: Point2D, visible: Boolean) {
