@@ -4,6 +4,7 @@ import com.stochastictinkr.cards.CardBacks
 import com.stochastictinkr.cards.CardImages
 import com.stochastictinkr.cards.standard.Card
 import com.stochastictinkr.cards.standard.CardSuit
+import com.stochastictinkr.cards.standard.StandardDeck
 import com.stochastictinkr.skywing.awt.geom.point
 import com.stochastictinkr.skywing.awt.geom.roundRectangle
 import com.stochastictinkr.skywing.awt.hints
@@ -130,10 +131,17 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         actionMap.put("Undo", action { solitaireGame.undo() })
         actionMap.put("Redo", action { solitaireGame.redo() })
         solitaireGame.addListener(solitaireListener)
+        StandardDeck.cards.forEach {
+            displayModel[it].apply {
+                setTarget(stockStartPoint, false)
+                delta = 1f
+            }
+        }
         updateDisplay()
         Timer(125) {
-            displayModel.update()
-            repaint()
+            if (displayModel.update()) {
+                repaint()
+            }
         }.apply {
             isRepeats = true
             delay = 20

@@ -45,8 +45,10 @@ class CardDisplayModel {
 
     operator fun get(card: Card) = cards.computeIfAbsent(card) { CardDisplay(Position(point(0.0, 0.0)), Flip(0f), 0f) }
 
-    fun update() {
+    fun update(): Boolean {
+        val needPaint = cards.values.any { it.delta < 1f }
         cards.values.forEach(CardDisplay::update)
+        return needPaint
     }
 
     fun draw(card: Card, g: Graphics2D, isSelected: Boolean, images: CardImages, back: CardBacks) {
@@ -61,7 +63,7 @@ class CardDisplayModel {
 
         val transform = makeTransform {
             translate(point.x, point.y + images.cardHeight * (1 - abs(.5 - flip) * 2))
-            scale(1.0, abs(.5 - flip) * 2)
+            scale(1.0, abs(flip - .5) * 2)
         }
         if (isSelected) {
             g.paint = Color.YELLOW
