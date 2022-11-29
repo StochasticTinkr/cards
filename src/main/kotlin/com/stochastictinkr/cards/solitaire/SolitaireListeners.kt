@@ -8,6 +8,10 @@ class SolitaireListeners : SolitaireListener {
         listeners.forEach(block)
     }
 
+    override fun newGame(state: SolitaireState) {
+        dispatch { it.newGame(state) }
+    }
+
     override fun stateChanged(oldState: SolitaireState, newState: SolitaireState) {
         dispatch { it.stateChanged(oldState, newState) }
     }

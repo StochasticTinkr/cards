@@ -97,6 +97,15 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
     }
 
     private val solitaireListener = object : SolitaireListener {
+        override fun newGame(state: SolitaireState) {
+            StandardDeck.cards.forEach {
+                displayModel[it].apply {
+                    setTarget(stockStartPoint, false)
+                    delta = 1f
+                }
+            }
+            repaint()
+        }
         override fun stateChanged(oldState: SolitaireState, newState: SolitaireState) {
             updateDisplay()
             repaint()

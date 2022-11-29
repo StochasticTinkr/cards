@@ -24,7 +24,9 @@ class SolitaireGame {
     val numberOfCardsInStock get() = currentState.stock.size
 
     fun newGame() {
-        state = newGameState()
+        val newGameState = newGameState()
+        listeners.newGame(newGameState)
+        state = newGameState
         undoHistory.clear()
         redoHistory.clear()
         clearSelection()
