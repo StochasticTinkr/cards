@@ -15,6 +15,8 @@ enum class CardRank(val rankName: String) {
     QUEEN("queen"),
     KING("king");
 
+    val previous: CardRank? get() = if (ordinal == 0) null else values()[ordinal - 1]
+
     fun isJustAfter(other: CardRank) = ordinal == other.ordinal + 1
     fun isJustBefore(other: CardRank) = other.isJustAfter(this)
 }

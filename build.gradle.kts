@@ -13,6 +13,7 @@ repositories {
 }
 
 dependencies {
+    sourceArtifacts(kotlin("jvm"))
     implementation("com.stochastictinkr:skywing:1.0-SNAPSHOT")
     sourceArtifacts("com.stochastictinkr:skywing:1.0-SNAPSHOT")
     implementation("org.apache.xmlgraphics:batik-dom:1.15")

@@ -58,7 +58,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
     private val stockFanHeight get() = -images.cardHeight / 90
 
     private val wastePosition get() = point(width - cardSize.width * 2 - 8, tableauY + cardSize.height + 10)
-    private val displayModel = CardDisplayModel()
+    private val displayModel = CardDisplayModel(solitaireGame::isSelected, images) { cardBack }
 
     // Listeners
     private val mouseListener = object : MouseAdapter() {
@@ -153,16 +153,19 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         CardSuit.values().forEachIndexed { index, suit ->
             val position = point(foundationX + (cardSize.width + foundationMargin) * index, foundationY)
             solitaireGame.currentState.foundations[suit]?.let { rank ->
-                displayModel[Card(suit, rank)].setTarget(position, true)
+                displayModel[Card(suit, rank)].setTarget(position, true, 100)
+                rank.previous?.let { previous ->
+                    displayModel[Card(suit, previous)].setTarget(position, true, 99)
+                }
             }
         }
-        solitaireGame.currentState.waste.lastOrNull()?.let { card ->
-            displayModel[card].setTarget(wastePosition, true)
+        solitaireGame.currentState.waste.forEachIndexed { index, card ->
+            displayModel[card].setTarget(wastePosition, true, index)
         }
         solitaireGame.currentState.stock.forEachIndexed { index, card ->
             displayModel[card].setTarget(stockStartPoint.apply {
                 y += index * stockFanHeight
-            }, false)
+            }, false, index)
         }
         val hiddenCards = solitaireGame.currentState.tableauHidden
         val visibleCards = solitaireGame.currentState.tableauVisible
@@ -172,7 +175,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
                     tableauX + (cardSize.width + tableauMargin) * tableauNumber,
                     tableauY + index * tableauHiddenCardFanHeight
                 )
-                displayModel[card].setTarget(position, false)
+                displayModel[card].setTarget(position, false, index - 50)
             }
             val startY = tableauY + hiddenCards[tableauNumber].size * tableauHiddenCardFanHeight
             visibleCards[tableauNumber].forEachIndexed { index, card ->
@@ -180,7 +183,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
                     tableauX + (cardSize.width + tableauMargin) * tableauNumber,
                     startY + index * tableauVisibleCardFanHeight
                 )
-                displayModel[card].setTarget(position, true)
+                displayModel[card].setTarget(position, true, index)
             }
         }
 
@@ -201,6 +204,8 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         g.paintTableau()
         g.paintStock()
         g.paintWaste()
+
+        displayModel.drawAll(g)
     }
 
     private fun Graphics2D.paintWaste() {
@@ -208,14 +213,14 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         val waste = solitaireGame.currentState.waste
         waste.subList(max(0, waste.size - 2), waste.size)
             .forEach { card ->
-                displayModel.draw(card, this, solitaireGame.isSelected(card), images, cardBack)
+                displayModel.draw(card, this)
             }
     }
 
     private fun Graphics2D.paintStock() {
         drawPlacementOutline(stockStartPoint)
-        solitaireGame.currentState.stock.forEachIndexed { index, card ->
-            displayModel.draw(card, this, false, images, cardBack)
+        solitaireGame.currentState.stock.forEach { card ->
+            displayModel.draw(card, this)
         }
     }
 
@@ -225,10 +230,10 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         repeat(7) { tableauNumber ->
             drawPlacementOutline(point(tableauX + (cardSize.width + tableauMargin) * tableauNumber, tableauY))
             hiddenCards[tableauNumber].forEach { card ->
-                displayModel.draw(card, this, false, images, cardBack)
+                displayModel.draw(card, this)
             }
             visibleCards[tableauNumber].forEach { card ->
-                displayModel.draw(card, this, false, images, cardBack)
+                displayModel.draw(card, this)
             }
         }
     }
@@ -237,7 +242,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         CardSuit.values().forEachIndexed { index, suit ->
             drawPlacementOutline(point(foundationX + (cardSize.width + foundationMargin) * index, foundationY))
             solitaireGame.currentState.foundations[suit]?.let { rank ->
-                displayModel.draw(Card(suit, rank), this, false, images, cardBack)
+                displayModel.draw(Card(suit, rank), this)
             }
         }
     }

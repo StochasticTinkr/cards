@@ -14,7 +14,13 @@ import java.awt.geom.Point2D
 import kotlin.math.abs
 import kotlin.math.min
 
-class CardDisplayModel {
+class CardDisplayModel(
+    private val isSelected: (Card) -> Boolean,
+    private val images: CardImages,
+    private var getBack: () -> CardBacks,
+) {
+    private val back: CardBacks get() = getBack()
+
     class Position(val start: Point2D, val target: Point2D = start) {
         operator fun get(delta: Float) = start * (1 - delta) + target * delta
     }
@@ -27,6 +33,7 @@ class CardDisplayModel {
         var position: Position,
         var flip: Flip,
         var delta: Float,
+        var layer: Int = 0,
     ) {
         val point get() = position[delta]
         val flipAmount get() = flip[delta]
@@ -34,9 +41,10 @@ class CardDisplayModel {
             delta = min(delta + .05f, 1f)
         }
 
-        fun setTarget(position: Point2D, visible: Boolean) {
+        fun setTarget(position: Point2D, visible: Boolean, layer: Int = this.layer) {
             this.position = Position(point, position)
             this.flip = if (visible) Flip(flipAmount, 1f) else Flip(0f, 0f)
+            this.layer = layer
             delta = 0f
         }
     }
@@ -51,8 +59,20 @@ class CardDisplayModel {
         return needPaint
     }
 
-    fun draw(card: Card, g: Graphics2D, isSelected: Boolean, images: CardImages, back: CardBacks) {
-        val display = cards[card] ?: return
+    fun drawAll(g: Graphics2D) {
+        cards.toList().sortedBy { (_, display) -> display.layer }.forEach { (card, display) -> draw(g, card, display) }
+    }
+
+    fun draw(card: Card, g: Graphics2D) {
+//        val display = cards[card] ?: return
+//        draw(g, card, display)
+    }
+
+    private fun draw(
+        g: Graphics2D,
+        card: Card,
+        display: CardDisplay,
+    ) {
         val point = display.point
         val flip = display.flipAmount
         val image = if (flip <= .5f) {
@@ -65,7 +85,7 @@ class CardDisplayModel {
             translate(point.x, point.y + images.cardHeight * (1 - abs(.5 - flip) * 2))
             scale(1.0, abs(flip - .5) * 2)
         }
-        if (isSelected) {
+        if (isSelected(card)) {
             g.paint = Color.YELLOW
             g.fill(
                 transform.createTransformedShape(roundRectangle {
