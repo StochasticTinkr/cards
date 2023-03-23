@@ -308,6 +308,11 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
 
         val numHiddenCards = state.tableauHidden[index].size
         val visibleCards = state.tableauVisible[index]
+
+        if (visibleCards.isEmpty()) {
+            return null
+        }
+
         val tableauHeight = cardSize.height +
                 (tableauHiddenCardFanHeight * numHiddenCards + tableauVisibleCardFanHeight * visibleCards.size)
         val offsetY = point.y - tableauY
