@@ -24,6 +24,7 @@ import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.util.prefs.Preferences
 import javax.swing.JComponent
 import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
@@ -33,9 +34,12 @@ import kotlin.math.min
 
 
 class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
-    var cardBack = CardBacks.BLUE
+    private val preferences get() = Preferences.userNodeForPackage(javaClass)!!
+
+    var cardBack = CardBacks.valueOf(preferences["Back", CardBacks.BLUE.name])
         set(value) {
             field = value
+            preferences.put("Back", value.name)
             repaint()
         }
 
@@ -119,6 +123,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             repaint()
         }
     }
+
 
     // Set up the listeners.
     init {
