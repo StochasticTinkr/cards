@@ -2,15 +2,13 @@ package com.stochastictinkr.cards.solitaire
 
 import com.stochastictinkr.cards.CardBacks
 import com.stochastictinkr.skywing.initSkywing
-import com.stochastictinkr.skywing.swing.accelerator
 import com.stochastictinkr.skywing.swing.action
-import com.stochastictinkr.skywing.swing.actionCommand
+import com.stochastictinkr.skywing.swing.addAction
 import com.stochastictinkr.skywing.swing.addMenu
 import com.stochastictinkr.skywing.swing.menuBar
 import java.awt.EventQueue.invokeLater
 import java.awt.Frame
 import java.awt.event.KeyEvent
-import javax.swing.Action
 import javax.swing.ButtonGroup
 import javax.swing.JFrame
 import javax.swing.JRadioButtonMenuItem
@@ -88,13 +86,6 @@ fun main() {
             isVisible = true
         }
     }
-}
-
-private fun SolitaireComponent.addAction(
-    undo: Action,
-) {
-    inputMap.put(undo.accelerator, undo.actionCommand)
-    actionMap.put(undo.actionCommand, undo)
 }
 
 private fun keyStroke(stroke: String): KeyStroke? = KeyStroke.getKeyStroke(stroke)
