@@ -137,13 +137,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         addMouseListener(mouseListener)
         addMouseMotionListener(mouseListener)
         addMouseWheelListener(mouseListener)
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.META_DOWN_MASK), "Undo")
-        inputMap.put(
-            KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.META_DOWN_MASK or InputEvent.SHIFT_DOWN_MASK),
-            "Redo"
-        )
-        actionMap.put("Undo", action { solitaireGame.undo() })
-        actionMap.put("Redo", action { solitaireGame.redo() })
+
         solitaireGame.addListener(solitaireListener)
         StandardDeck.cards.forEach {
             displayModel[it].apply {

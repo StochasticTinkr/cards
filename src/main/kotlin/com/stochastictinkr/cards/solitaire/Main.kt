@@ -2,13 +2,19 @@ package com.stochastictinkr.cards.solitaire
 
 import com.stochastictinkr.cards.CardBacks
 import com.stochastictinkr.skywing.initSkywing
+import com.stochastictinkr.skywing.swing.accelerator
 import com.stochastictinkr.skywing.swing.action
-import com.stochastictinkr.skywing.swing.addItem
+import com.stochastictinkr.skywing.swing.actionCommand
 import com.stochastictinkr.skywing.swing.addMenu
 import com.stochastictinkr.skywing.swing.menuBar
 import java.awt.EventQueue.invokeLater
 import java.awt.Frame
+import java.awt.event.KeyEvent
+import javax.swing.Action
+import javax.swing.ButtonGroup
 import javax.swing.JFrame
+import javax.swing.JRadioButtonMenuItem
+import javax.swing.KeyStroke
 import kotlin.system.exitProcess
 
 fun main() {
@@ -24,32 +30,57 @@ fun main() {
         solitaireGame.newGame()
 
         val solitaireComponent = SolitaireComponent(solitaireGame)
-        val newGame = action(name = "New Game", actionCommand = "New Game") {
-            solitaireGame.newGame()
-            solitaireComponent.repaint()
+        val undo = action(
+            name = "Undo",
+            mnemonicKeyCode = KeyEvent.VK_U,
+            accelerator = keyStroke("meta Z"),
+            actionCommand = "Undo"
+        ) { solitaireGame.undo() }
+
+        val redo = action(
+            name = "Redo",
+            mnemonicKeyCode = KeyEvent.VK_R,
+            accelerator = keyStroke("shift meta Z"),
+            actionCommand = "Redo"
+        ) { solitaireGame.redo() }
+
+        solitaireComponent.addAction(undo)
+        solitaireComponent.addAction(redo)
+        val newGame = action(
+            name = "New Game",
+            accelerator = keyStroke("meta N"),
+            mnemonicKeyCode = KeyEvent.VK_N,
+        ) { solitaireGame.newGame() }
+        val quit = action(
+            name = "Quit",
+            mnemonicKeyCode = KeyEvent.VK_Q,
+            accelerator = keyStroke("meta Q")
+        ) { exitProcess(0) }
+        val chooseDeckActions = CardBacks.values().map { cardBack ->
+            action(
+                name = cardBack.displayName,
+                isSelected = cardBack == solitaireComponent.cardBack
+            ) { solitaireComponent.cardBack = cardBack }
         }
-        val quit = action(name = "Quit") {
-            exitProcess(0)
-        }
+
 
         with(jFrame) {
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
             menuBar {
                 addMenu {
                     text = "Game"
-                    addItem(newGame)
+                    add(newGame)
                     addSeparator()
-                    addItem(quit)
+                    add(quit)
                 }
                 addMenu {
                     text = "Deck"
-                    CardBacks.values().map { cardBack ->
-                        addItem(
-                            action = action(name = cardBack.displayName) {
-                                solitaireComponent.cardBack = cardBack
-                            }
-                        )
-                    }
+                    val group = ButtonGroup()
+                    chooseDeckActions.map { action -> JRadioButtonMenuItem(action) }
+                        .forEach {
+                            add(it)
+                            group.add(it)
+                        }
                 }
             }
             add(solitaireComponent)
@@ -58,3 +89,12 @@ fun main() {
         }
     }
 }
+
+private fun SolitaireComponent.addAction(
+    undo: Action,
+) {
+    inputMap.put(undo.accelerator, undo.actionCommand)
+    actionMap.put(undo.actionCommand, undo)
+}
+
+private fun keyStroke(stroke: String): KeyStroke? = KeyStroke.getKeyStroke(stroke)
