@@ -1,7 +1,15 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm") version "1.8.20"
+    idea
+}
+
+idea {
+    module {
+        isDownloadSources = true
+        isDownloadJavadoc = true
+    }
 }
 
 group = "com.stochastictinkr"
@@ -13,11 +21,9 @@ repositories {
 }
 
 dependencies {
-    sourceArtifacts(kotlin("jvm"))
     implementation("com.stochastictinkr:skywing:1.0-SNAPSHOT")
-    sourceArtifacts("com.stochastictinkr:skywing:1.0-SNAPSHOT")
-    implementation("org.apache.xmlgraphics:batik-dom:1.15")
-    implementation("org.apache.xmlgraphics:batik-swing:1.15")
+    implementation("org.apache.xmlgraphics:batik-dom:1.16")
+    implementation("org.apache.xmlgraphics:batik-swing:1.16")
     testImplementation(kotlin("test"))
 }
 
