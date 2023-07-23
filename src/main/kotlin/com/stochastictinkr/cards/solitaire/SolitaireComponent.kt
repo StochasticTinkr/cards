@@ -11,7 +11,6 @@ import com.stochastictinkr.skywing.awt.hints
 import com.stochastictinkr.skywing.rendering.geom.by
 import com.stochastictinkr.skywing.rendering.geom.component1
 import com.stochastictinkr.skywing.rendering.geom.component2
-import com.stochastictinkr.skywing.swing.action
 import com.stochastictinkr.utils.isEven
 import java.awt.Color
 import java.awt.Graphics
@@ -20,13 +19,10 @@ import java.awt.Point
 import java.awt.Rectangle
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import java.awt.event.InputEvent
-import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.prefs.Preferences
 import javax.swing.JComponent
-import javax.swing.KeyStroke
 import javax.swing.SwingUtilities
 import javax.swing.Timer
 import kotlin.math.max
@@ -110,6 +106,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             }
             repaint()
         }
+
         override fun stateChanged(oldState: SolitaireState, newState: SolitaireState) {
             updateDisplay()
             repaint()
@@ -218,40 +215,21 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
 
     private fun Graphics2D.paintWaste() {
         drawPlacementOutline(wastePosition)
-        val waste = solitaireGame.currentState.waste
-        waste.subList(max(0, waste.size - 2), waste.size)
-            .forEach { card ->
-                displayModel.draw(card, this)
-            }
     }
 
     private fun Graphics2D.paintStock() {
         drawPlacementOutline(stockStartPoint)
-        solitaireGame.currentState.stock.forEach { card ->
-            displayModel.draw(card, this)
-        }
     }
 
     private fun Graphics2D.paintTableau() {
-        val hiddenCards = solitaireGame.currentState.tableauHidden
-        val visibleCards = solitaireGame.currentState.tableauVisible
         repeat(7) { tableauNumber ->
             drawPlacementOutline(point(tableauX + (cardSize.width + tableauMargin) * tableauNumber, tableauY))
-            hiddenCards[tableauNumber].forEach { card ->
-                displayModel.draw(card, this)
-            }
-            visibleCards[tableauNumber].forEach { card ->
-                displayModel.draw(card, this)
-            }
         }
     }
 
     private fun Graphics2D.paintFoundation() {
-        CardSuit.values().forEachIndexed { index, suit ->
+        CardSuit.values().indices.forEach { index ->
             drawPlacementOutline(point(foundationX + (cardSize.width + foundationMargin) * index, foundationY))
-            solitaireGame.currentState.foundations[suit]?.let { rank ->
-                displayModel.draw(Card(suit, rank), this)
-            }
         }
     }
 

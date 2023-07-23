@@ -63,11 +63,6 @@ class CardDisplayModel(
         cards.toList().sortedBy { (_, display) -> display.layer }.forEach { (card, display) -> draw(g, card, display) }
     }
 
-    fun draw(card: Card, g: Graphics2D) {
-//        val display = cards[card] ?: return
-//        draw(g, card, display)
-    }
-
     private fun draw(
         g: Graphics2D,
         card: Card,
