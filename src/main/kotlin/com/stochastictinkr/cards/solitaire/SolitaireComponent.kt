@@ -98,11 +98,9 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
 
     private val solitaireListener = object : SolitaireListener {
         override fun newGame(state: SolitaireState) {
+            displayModel.clear()
             StandardDeck.cards.forEach {
-                displayModel[it].apply {
-                    setTarget(stockStartPoint, false)
-                    delta = 1f
-                }
+                displayModel[it] = CardDisplayModel.State(stockStartPoint, 0f, 0f)
             }
             repaint()
         }
@@ -136,15 +134,9 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         addMouseWheelListener(mouseListener)
 
         solitaireGame.addListener(solitaireListener)
-        StandardDeck.cards.forEach {
-            displayModel[it].apply {
-                setTarget(stockStartPoint, false)
-                delta = 1f
-            }
-        }
         updateDisplay()
         Timer(125) {
-            if (displayModel.update()) {
+            if (displayModel.needsUpdate()) {
                 repaint()
             }
         }.apply {

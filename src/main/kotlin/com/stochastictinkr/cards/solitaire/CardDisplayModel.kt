@@ -3,73 +3,58 @@ package com.stochastictinkr.cards.solitaire
 import com.stochastictinkr.cards.CardBacks
 import com.stochastictinkr.cards.CardImages
 import com.stochastictinkr.cards.standard.Card
+import com.stochastictinkr.rendering.Animation
 import com.stochastictinkr.skywing.awt.geom.makeTransform
 import com.stochastictinkr.skywing.awt.geom.plus
-import com.stochastictinkr.skywing.awt.geom.point
 import com.stochastictinkr.skywing.awt.geom.roundRectangle
 import com.stochastictinkr.skywing.awt.geom.times
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.geom.Point2D
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
 import kotlin.math.abs
-import kotlin.math.min
 
 class CardDisplayModel(
     private val isSelected: (Card) -> Boolean,
     private val images: CardImages,
+    clock: Clock = Clock.systemUTC(),
     private var getBack: () -> CardBacks,
 ) {
+    private var lastPaint: Instant = clock.instant().minusSeconds(1)
     private val back: CardBacks get() = getBack()
-
-    class Position(val start: Point2D, val target: Point2D = start) {
-        operator fun get(delta: Float) = start * (1 - delta) + target * delta
+    private val animation = Animation<Card, State>(clock) { left, delta, right ->
+        left * (1.0 - delta) + right * delta
     }
 
-    class Flip(val start: Float, val target: Float = start) {
-        operator fun get(delta: Float) = start * (1 - delta) + target * delta
-    }
-
-    class CardDisplay(
-        var position: Position,
-        var flip: Flip,
-        var delta: Float,
-        var layer: Int = 0,
+    data class State(
+        val position: Point2D,
+        val flip: Float,
+        val z: Float,
     ) {
-        val point get() = position[delta]
-        val flipAmount get() = flip[delta]
-        fun update() {
-            delta = min(delta + .05f, 1f)
-        }
-
-        fun setTarget(position: Point2D, visible: Boolean, layer: Int = this.layer) {
-            this.position = Position(point, position)
-            this.flip = if (visible) Flip(flipAmount, 1f) else Flip(0f, 0f)
-            this.layer = layer
-            delta = 0f
-        }
-    }
-
-    val cards: MutableMap<Card, CardDisplay> = LinkedHashMap()
-
-    operator fun get(card: Card) = cards.computeIfAbsent(card) { CardDisplay(Position(point(0.0, 0.0)), Flip(0f), 0f) }
-
-    fun update(): Boolean {
-        val needPaint = cards.values.any { it.delta < 1f }
-        cards.values.forEach(CardDisplay::update)
-        return needPaint
+        operator fun times(delta: Double) = State(position * delta, flip * delta.toFloat(), z * delta.toFloat())
+        operator fun plus(state: State): State = State(position + state.position, flip + state.flip, z + state.z)
     }
 
     fun drawAll(g: Graphics2D) {
-        cards.toList().sortedBy { (_, display) -> display.layer }.forEach { (card, display) -> draw(g, card, display) }
+        lastPaint = Instant.now()
+        animation.asSequence(lastPaint)
+            .sortedBy { (_, state) -> state.z }
+            .forEach { (card, state) -> draw(g, card, state) }
+    }
+
+    fun clear() {
+        animation.clear()
     }
 
     private fun draw(
         g: Graphics2D,
         card: Card,
-        display: CardDisplay,
+        state: State,
     ) {
-        val point = display.point
-        val flip = display.flipAmount
+        val position = state.position
+        val flip = state.flip
         val image = if (flip <= .5f) {
             images[back]
         } else {
@@ -77,7 +62,7 @@ class CardDisplayModel(
         }
 
         val transform = makeTransform {
-            translate(point.x, point.y + images.cardHeight * (1 - abs(.5 - flip) * 2))
+            translate(position.x, position.y + images.cardHeight * (1 - abs(.5 - flip) * 2))
             scale(1.0, abs(flip - .5) * 2)
         }
         if (isSelected(card)) {
@@ -93,5 +78,27 @@ class CardDisplayModel(
             )
         }
         g.drawRenderedImage(image, transform)
+    }
+
+    operator fun set(card: Card, value: State) {
+        animation[card] = value
+    }
+
+    fun needsUpdate(): Boolean {
+        return animation.needsUpdate(lastPaint)
+    }
+
+    operator fun get(card: Card): NextState = NextState(card)
+
+    inner class NextState(val card: Card, var delta: Duration = Duration.ofMillis(125)) {
+        fun setTarget(position: Point2D, visible: Boolean, z: Int) {
+            val state = State(position, if (visible) 1f else 0f, z.toFloat())
+            animation.append(card, Duration.ofMillis(1)) {
+                it ?: state
+            }
+            animation.append(card, delta) { _: State? ->
+                state
+            }
+        }
     }
 }
