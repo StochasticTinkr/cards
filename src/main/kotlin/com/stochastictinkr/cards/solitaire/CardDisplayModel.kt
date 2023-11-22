@@ -4,10 +4,10 @@ import com.stochastictinkr.cards.CardBacks
 import com.stochastictinkr.cards.CardImages
 import com.stochastictinkr.cards.standard.Card
 import com.stochastictinkr.rendering.Animation
-import com.stochastictinkr.skywing.awt.geom.makeTransform
-import com.stochastictinkr.skywing.awt.geom.plus
-import com.stochastictinkr.skywing.awt.geom.roundRectangle
-import com.stochastictinkr.skywing.awt.geom.times
+import com.stochastictinkr.skywing.geom.affineTransform
+import com.stochastictinkr.skywing.geom.plus
+import com.stochastictinkr.skywing.geom.roundRectangle
+import com.stochastictinkr.skywing.geom.times
 import java.awt.Color
 import java.awt.Graphics2D
 import java.awt.geom.Point2D
@@ -61,7 +61,7 @@ class CardDisplayModel(
             images[card]
         }
 
-        val transform = makeTransform {
+        val transform = affineTransform {
             translate(position.x, position.y + images.cardHeight * (1 - abs(.5 - flip) * 2))
             scale(1.0, abs(flip - .5) * 2)
         }

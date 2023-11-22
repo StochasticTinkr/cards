@@ -2,10 +2,10 @@ package com.stochastictinkr.cards.solitaire
 
 import com.stochastictinkr.cards.CardBacks
 import com.stochastictinkr.skywing.initSkywing
-import com.stochastictinkr.skywing.swing.action
-import com.stochastictinkr.skywing.swing.addAction
-import com.stochastictinkr.skywing.swing.addMenu
-import com.stochastictinkr.skywing.swing.menuBar
+import com.stochastictinkr.skywing.components.events.action
+import com.stochastictinkr.skywing.components.addAction
+import com.stochastictinkr.skywing.components.createMenuBar
+import com.stochastictinkr.skywing.components.menu
 import java.awt.EventQueue.invokeLater
 import java.awt.Frame
 import java.awt.event.KeyEvent
@@ -64,14 +64,14 @@ fun main() {
 
         with(jFrame) {
             defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-            menuBar {
-                addMenu {
+            createMenuBar {
+                menu {
                     text = "Game"
                     add(newGame)
                     addSeparator()
                     add(quit)
                 }
-                addMenu {
+                menu {
                     text = "Deck"
                     val group = ButtonGroup()
                     chooseDeckActions.map { action -> JRadioButtonMenuItem(action) }

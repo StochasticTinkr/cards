@@ -1,7 +1,7 @@
 package com.stochastictinkr.svg
 
-import com.stochastictinkr.skywing.awt.geom.size
-import com.stochastictinkr.skywing.awt.hints
+import com.stochastictinkr.skywing.geom.size
+import com.stochastictinkr.skywing.rendering.hints
 import org.apache.batik.anim.dom.SAXSVGDocumentFactory
 import org.apache.batik.bridge.BridgeContext
 import org.apache.batik.bridge.GVTBuilder
@@ -31,7 +31,7 @@ fun GraphicsNode.drawTo(image: BufferedImage) {
     try {
         g.color = Color(0, 0, 0, 0)
         g.fillRect(0, 0, image.width, image.height)
-        g.scale(image.width / size.width.toDouble(), image.height / size.height.toDouble())
+        g.scale(image.width / size.width, image.height / size.height)
         g.hints {
             renderingQuality()
             antialiasingOn()

@@ -1,7 +1,6 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.8.20"
+    kotlin("jvm") version "1.9.20"
     idea
 }
 
@@ -21,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.stochastictinkr:skywing:1.0-SNAPSHOT")
+    implementation("com.stochastictinkr:skywing:0.1-SNAPSHOT")
     implementation("org.apache.xmlgraphics:batik-dom:1.16")
     implementation("org.apache.xmlgraphics:batik-swing:1.16")
     testImplementation(kotlin("test"))
@@ -31,6 +30,6 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "17"
+kotlin {
+    jvmToolchain(17)
 }

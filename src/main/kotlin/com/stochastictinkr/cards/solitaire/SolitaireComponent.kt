@@ -5,12 +5,12 @@ import com.stochastictinkr.cards.CardImages
 import com.stochastictinkr.cards.standard.Card
 import com.stochastictinkr.cards.standard.CardSuit
 import com.stochastictinkr.cards.standard.StandardDeck
-import com.stochastictinkr.skywing.awt.geom.point
-import com.stochastictinkr.skywing.awt.geom.roundRectangle
-import com.stochastictinkr.skywing.awt.hints
-import com.stochastictinkr.skywing.rendering.geom.by
-import com.stochastictinkr.skywing.rendering.geom.component1
-import com.stochastictinkr.skywing.rendering.geom.component2
+import com.stochastictinkr.skywing.geom.point
+import com.stochastictinkr.skywing.geom.roundRectangle
+import com.stochastictinkr.skywing.rendering.hints
+import com.stochastictinkr.skywing.geom.by
+import com.stochastictinkr.skywing.geom.component1
+import com.stochastictinkr.skywing.geom.component2
 import com.stochastictinkr.utils.isEven
 import java.awt.Color
 import java.awt.Graphics
@@ -41,7 +41,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
 
     private val images = CardImages()
     private val cardSize get() = images.cardWidth by images.cardHeight
-    private val numFoundations = CardSuit.values().size
+    private val numFoundations = CardSuit.entries.size
 
     // Layout
     private val foundationMargin = 15
@@ -147,7 +147,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
     }
 
     private fun updateDisplay() {
-        CardSuit.values().forEachIndexed { index, suit ->
+        CardSuit.entries.forEachIndexed { index, suit ->
             val position = point(foundationX + (cardSize.width + foundationMargin) * index, foundationY)
             solitaireGame.currentState.foundations[suit]?.let { rank ->
                 displayModel[Card(suit, rank)].setTarget(position, true, 100)
@@ -220,7 +220,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
     }
 
     private fun Graphics2D.paintFoundation() {
-        CardSuit.values().indices.forEach { index ->
+        CardSuit.entries.indices.forEach { index ->
             drawPlacementOutline(point(foundationX + (cardSize.width + foundationMargin) * index, foundationY))
         }
     }
