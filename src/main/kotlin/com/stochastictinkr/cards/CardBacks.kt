@@ -1,5 +1,10 @@
 package com.stochastictinkr.cards
 
+/**
+ * The available card backs images. See [CardImages] for implementation details.
+ * @property filename The partial filename of the SVG file (without path and extension).
+ * @property displayName The display name of the card back for use in UIs.
+ */
 enum class CardBacks(val filename: String, val displayName: String) {
     ABSTRACT("abstract", "Abstract"),
     CLOUDS("abstract_clouds", "Abstract Clouds"),
