@@ -1,9 +1,9 @@
 package com.stochastictinkr.cards.standard
 
 
-object StandardDeck {
-    val cards = CardSuit.values().flatMap { suit ->
-        CardRank.values().map { rank ->
+data object StandardDeck {
+    val cards = CardSuit.entries.flatMap { suit ->
+        CardRank.entries.map { rank ->
             Card(suit, rank)
         }
     }
