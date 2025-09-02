@@ -22,8 +22,8 @@ repositories {
 
 dependencies {
     implementation("com.stochastictinkr:skywing:0.1-SNAPSHOT")
-    implementation("org.apache.xmlgraphics:batik-dom:1.16")
-    implementation("org.apache.xmlgraphics:batik-swing:1.16")
+    implementation("org.apache.xmlgraphics:batik-dom:1.19")
+    implementation("org.apache.xmlgraphics:batik-swing:1.19")
     testImplementation(kotlin("test"))
 }
 
