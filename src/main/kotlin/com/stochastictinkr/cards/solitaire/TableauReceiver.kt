@@ -40,7 +40,7 @@ class TableauReceiver(val idx: Int) : CardReceiver {
             for (i in 0 until (size - 1)) {
                 val a = this[i]
                 val b = this[i + 1]
-                if (a.suit == b.suit) {
+                if (a.color == b.color) {
                     return false
                 }
                 if (!a.rank.isJustAfter(b.rank)) {
