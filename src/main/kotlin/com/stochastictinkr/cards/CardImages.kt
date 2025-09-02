@@ -63,7 +63,7 @@ class CardImages {
      */
     operator fun get(card: Card): BufferedImage = cache.computeIfAbsent(card) {
         BufferedImage(cardWidth, cardHeight, BufferedImage.TYPE_INT_ARGB).also {
-            cardPainters[card]!!.drawTo(it)
+            cardPainters.getValue(card).drawTo(it)
         }
     }
 
@@ -74,7 +74,7 @@ class CardImages {
      */
     operator fun get(back: CardBacks) = cache.computeIfAbsent(back) {
         BufferedImage(cardWidth, cardHeight, BufferedImage.TYPE_INT_ARGB).also {
-            backPainter[back]!!.drawTo(it)
+            backPainter.getValue(back).drawTo(it)
         }
     }
 
