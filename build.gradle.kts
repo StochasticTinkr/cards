@@ -1,6 +1,7 @@
 
 plugins {
-    kotlin("jvm") version "1.9.20"
+    kotlin("jvm") version "2.0.20"
+    application
     idea
 }
 
@@ -30,6 +31,10 @@ tasks.test {
     useJUnitPlatform()
 }
 
+application {
+    mainClass.set("com.stochastictinkr.cards.solitaire.MainKt")
+}
+
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
