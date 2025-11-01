@@ -96,6 +96,7 @@ Prefer deterministic tests around pure logic (deck creation, rank sequences, tab
 
 ## Assets & rendering
 - SVG assets are under `src/main/resources/cards` (fronts, backs, other variants)
+  - These are slightly modified versions of the assets from [SVG Playing Cards, A Public Domain Full Deck](https://www.tekeye.uk/playing_cards/svg-playing-cards)
 - Rendering uses Apache Batik (DOM + Swing)
 - Utilities live in `com.stochastictinkr.svg.SvgPainter`
 
