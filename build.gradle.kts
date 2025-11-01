@@ -1,8 +1,8 @@
-
 plugins {
     kotlin("jvm") version "2.0.20"
     application
     idea
+    id("org.beryx.runtime") version "2.0.0"
 }
 
 idea {
@@ -37,4 +37,28 @@ application {
 
 kotlin {
     jvmToolchain(21)
+}
+
+runtime {
+    options = listOf(
+        "--strip-debug",
+        "--compress", "2",
+        "--no-header-files",
+        "--no-man-pages"
+    )
+    modules = listOf(
+        "java.desktop",
+        "java.prefs",
+        "java.xml",
+        "jdk.xml.dom",
+        "java.datatransfer"
+    )
+
+    launcher {
+        noConsole = true
+    }
+
+    jpackage {
+        appVersion = "1.0.0"
+    }
 }
