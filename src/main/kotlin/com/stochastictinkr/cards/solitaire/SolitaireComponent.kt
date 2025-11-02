@@ -73,11 +73,17 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
     private val displayModel = CardDisplayModel(solitaireGame::isSelected, images, getBack = { cardBack }, animationsEnabled = { animationsEnabled })
 
     // Listeners
+    private var autoFinishTimer: Timer? = null
+    private var performingAutoFinish: Boolean = false
+
     private val mouseListener = object : MouseAdapter() {
         override fun mousePressed(e: MouseEvent) {
             if (!SwingUtilities.isLeftMouseButton(e)) {
                 return
             }
+            // Any user interaction interrupts auto-finish animations
+            autoFinishTimer?.stop()
+            autoFinishTimer = null
             val point: Point = e.point
             if (isInStock(point)) {
                 solitaireGame.pullFromStock()
@@ -120,6 +126,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         override fun stateChanged(oldState: SolitaireState, newState: SolitaireState) {
             updateDisplay()
             repaint()
+            maybeStartAutoFinish()
         }
 
         override fun selectionChanged(cardSource: CardSource, selectedCards: List<Card>) {
@@ -196,6 +203,53 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             }
         }
 
+    }
+
+    private fun shouldAutoFinish(): Boolean {
+        return autoFinishEnabled && solitaireGame.canAutoFinish() && !solitaireGame.lastChangeFromHistory
+    }
+
+    private fun maybeStartAutoFinish() {
+        if (!shouldAutoFinish()) return
+        if (performingAutoFinish) return
+        if (animationsEnabled) {
+            startAutoFinishTimer()
+        } else {
+            // Non-animated: complete immediately
+            performingAutoFinish = true
+            try {
+                // Keep stepping until blocked or conditions change
+                var progressed = true
+                while (progressed && shouldAutoFinish()) {
+                    progressed = solitaireGame.autoFinishStep()
+                }
+            } finally {
+                performingAutoFinish = false
+            }
+        }
+    }
+
+    private fun startAutoFinishTimer() {
+        // If a timer is already running, let it continue
+        if (autoFinishTimer != null) return
+        performingAutoFinish = true
+        autoFinishTimer = Timer(125) {
+            if (!shouldAutoFinish()) {
+                autoFinishTimer?.stop()
+                autoFinishTimer = null
+                performingAutoFinish = false
+                return@Timer
+            }
+            val progressed = solitaireGame.autoFinishStep()
+            if (!progressed) {
+                autoFinishTimer?.stop()
+                autoFinishTimer = null
+                performingAutoFinish = false
+            }
+        }.apply {
+            isRepeats = true
+            start()
+        }
     }
 
 

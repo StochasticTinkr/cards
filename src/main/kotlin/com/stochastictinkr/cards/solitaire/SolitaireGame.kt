@@ -5,6 +5,9 @@ import com.stochastictinkr.cards.standard.StandardDeck
 import kotlin.random.Random
 
 class SolitaireGame {
+    // Indicates whether the most recent state change was due to undo/redo history navigation
+    var lastChangeFromHistory: Boolean = false
+        private set
     private val listeners = SolitaireListeners()
     private var random = Random(System.nanoTime())
     private var state: SolitaireState = newGameState()
@@ -56,12 +59,14 @@ class SolitaireGame {
     private fun pushState(state: SolitaireState) {
         redoHistory.clear()
         undoHistory.add(currentState)
+        lastChangeFromHistory = false
         this.state = state
     }
 
     fun undo() {
         undoHistory.removeLastOrNull()?.let { previousState ->
             redoHistory.add(currentState)
+            lastChangeFromHistory = true
             this.state = previousState
         }
     }
@@ -69,6 +74,7 @@ class SolitaireGame {
     fun redo() {
         redoHistory.removeLastOrNull()?.let { nextState ->
             undoHistory.add(currentState)
+            lastChangeFromHistory = true
             this.state = nextState
         }
     }
@@ -107,6 +113,50 @@ class SolitaireGame {
     }
 
     fun isSelected(card: Card) = selectCards.contains(card)
+
+    fun canAutoFinish(): Boolean = currentState.tableauHidden.all { it.isEmpty() }
+
+    /**
+     * Perform a single auto-finish step.
+     * - If a Tableau/Waste top card can move to a foundation, moves the lowest-rank candidate.
+     * - Otherwise, pulls from stock to waste. Returns true if any change occurred.
+     */
+    fun autoFinishStep(): Boolean {
+        // Find candidates from tableau (top visible of each pile)
+        val state = currentState
+        data class Candidate(val source: CardSource, val receivable: List<Card>, val rankOrdinal: Int)
+        val candidates = mutableListOf<Candidate>()
+        // Tableau candidates
+        state.tableauVisible.forEachIndexed { idx, visible ->
+            val top = visible.lastOrNull() ?: return@forEachIndexed
+            val source = TableauSource(idx)
+            val avail = source.availableFrom(top, state)
+            val receivable = Foundations.canReceive(avail, state)
+            if (receivable.isNotEmpty()) {
+                val rankOrdinal = receivable.last().rank.ordinal
+                candidates += Candidate(source, receivable, rankOrdinal)
+            }
+        }
+        // Waste candidate
+        state.waste.lastOrNull()?.let { top ->
+            val source = WastePile
+            val avail = source.availableFrom(top, state)
+            val receivable = Foundations.canReceive(avail, state)
+            if (receivable.isNotEmpty()) {
+                val rankOrdinal = receivable.last().rank.ordinal
+                candidates += Candidate(source, receivable, rankOrdinal)
+            }
+        }
+        if (candidates.isNotEmpty()) {
+            val chosen = candidates.minBy { it.rankOrdinal }
+            transfer(Foundations, chosen.receivable, chosen.source)
+            return true
+        }
+        // No moves possible -> try pulling from stock
+        val before = currentState
+        pullFromStock()
+        return currentState !== before
+    }
 
     fun autoMoveCard(from: SourcedCard): Boolean {
         val (container, card) = from
