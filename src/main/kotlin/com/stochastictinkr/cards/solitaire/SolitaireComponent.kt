@@ -70,7 +70,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
     private val stockFanHeight get() = -images.cardHeight / 90
 
     private val wastePosition get() = point(width - cardSize.width * 2 - 8, tableauY + cardSize.height + 10)
-    private val displayModel = CardDisplayModel(solitaireGame::isSelected, images) { cardBack }
+    private val displayModel = CardDisplayModel(solitaireGame::isSelected, images, getBack = { cardBack }, animationsEnabled = { animationsEnabled })
 
     // Listeners
     private val mouseListener = object : MouseAdapter() {

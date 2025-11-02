@@ -14,6 +14,7 @@ class CardDisplayModel(
     private val images: CardImages,
     clock: Clock = Clock.systemUTC(),
     private var getBack: () -> CardBacks,
+    private val animationsEnabled: () -> Boolean,
 ) {
     private var lastPaint: Instant = clock.instant().minusSeconds(1)
     private val back: CardBacks get() = getBack()
@@ -85,11 +86,17 @@ class CardDisplayModel(
     inner class NextState(val card: Card, var delta: Duration = Duration.ofMillis(125)) {
         fun setTarget(position: Point2D, visible: Boolean, z: Int) {
             val state = State(position, if (visible) 1f else 0f, z.toFloat())
-            animation.append(card, Duration.ofMillis(1)) {
-                it ?: state
-            }
-            animation.append(card, delta) { _: State? ->
-                state
+            if (!animationsEnabled()) {
+                // Immediately set the state with no interpolation when animations are disabled
+                animation[card] = state
+            } else {
+                // Ensure an initial state exists, then animate to the target over the configured duration
+                animation.append(card, Duration.ofMillis(1)) {
+                    it ?: state
+                }
+                animation.append(card, delta) { _: State? ->
+                    state
+                }
             }
         }
     }
