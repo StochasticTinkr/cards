@@ -69,6 +69,10 @@ fun main() {
                     text = "Game"
                     add(newGame)
                     addSeparator()
+                    add(action(name = "Settings…", mnemonicKeyCode = KeyEvent.VK_S) {
+                        OptionsDialog(this@with, solitaireComponent).isVisible = true
+                    })
+                    addSeparator()
                     add(quit)
                 }
                 menu {

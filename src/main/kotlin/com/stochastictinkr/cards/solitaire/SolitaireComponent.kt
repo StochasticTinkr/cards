@@ -39,6 +39,18 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             repaint()
         }
 
+    var animationsEnabled: Boolean = preferences.getBoolean("Animations", true)
+        set(value) {
+            field = value
+            preferences.putBoolean("Animations", value)
+        }
+
+    var autoFinishEnabled: Boolean = preferences.getBoolean("AutoFinish", false)
+        set(value) {
+            field = value
+            preferences.putBoolean("AutoFinish", value)
+        }
+
     private val images = CardImages()
     private val cardSize get() = images.cardWidth by images.cardHeight
     private val numFoundations = CardSuit.entries.size
