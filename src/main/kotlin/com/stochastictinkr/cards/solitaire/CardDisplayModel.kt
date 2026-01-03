@@ -19,7 +19,8 @@ class CardDisplayModel(
     private var lastPaint: Instant = clock.instant().minusSeconds(1)
     private val back: CardBacks get() = getBack()
     private val animation = Animation<Card, State>(clock) { left, delta, right ->
-        left * (1.0 - delta) + right * delta
+        val t = cosh(delta * 2) / cosh(2.0)
+        left * (1.0 - t) + right * t
     }
 
     data class State(
