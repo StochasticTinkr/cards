@@ -84,6 +84,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             // Any user interaction interrupts auto-finish animations
             autoFinishTimer?.stop()
             autoFinishTimer = null
+            performingAutoFinish = false
             val point: Point = e.point
             if (isInStock(point)) {
                 solitaireGame.pullFromStock()
@@ -206,7 +207,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
     }
 
     private fun shouldAutoFinish(): Boolean {
-        return autoFinishEnabled && solitaireGame.canAutoFinish() && !solitaireGame.lastChangeFromHistory
+        return autoFinishEnabled && !solitaireGame.lastChangeFromHistory && solitaireGame.canAutoFinish()
     }
 
     private fun maybeStartAutoFinish() {

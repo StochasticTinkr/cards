@@ -88,15 +88,9 @@ class CardDisplayModel(
             val state = State(position, if (visible) 1f else 0f, z.toFloat())
             if (!animationsEnabled()) {
                 // Immediately set the state with no interpolation when animations are disabled
-                animation[card] = state
+                animation.immediate(card, state)
             } else {
-                // Ensure an initial state exists, then animate to the target over the configured duration
-                animation.append(card, Duration.ofMillis(1)) {
-                    it ?: state
-                }
-                animation.append(card, delta) { _: State? ->
-                    state
-                }
+                animation.interrupt(card, delta) { state }
             }
         }
     }

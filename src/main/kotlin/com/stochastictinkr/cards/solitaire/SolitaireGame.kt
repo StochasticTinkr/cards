@@ -54,6 +54,7 @@ class SolitaireGame {
 
     fun pullFromStock() {
         pushState(currentState.pullFromStock())
+        clearSelection()
     }
 
     private fun pushState(state: SolitaireState) {

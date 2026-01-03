@@ -1,10 +1,7 @@
 package com.stochastictinkr.rendering
 
-import java.time.Clock
-import java.time.Duration
-import java.time.Instant
-import java.util.NavigableMap
-import java.util.TreeMap
+import java.time.*
+import java.util.*
 
 class Animation<O, S>(
     val clock: Clock = Clock.systemUTC(),
@@ -76,12 +73,28 @@ class Animation<O, S>(
         objects.any { (_, items) -> items.lastKey().isAfter(instant) }
 
     fun append(obj: O, delta: Duration, minimumTime: Instant = clock.instant(), state: (S?) -> S) {
-        val map = objects.computeIfAbsent(obj) { TreeMap() }
+        val map = objects.getOrPut(obj) { TreeMap() }
         if (map.isEmpty()) {
             map[minimumTime] = state(null)
         } else {
             map[maxOf(map.lastKey(), minimumTime) + delta] = state(map.lastEntry().value)
         }
+    }
+
+    fun interrupt(obj: O, delta: Duration, minimumTime: Instant = clock.instant(), state: (S?) -> S) {
+        val now = maxOf(clock.instant(), minimumTime)
+        val map = objects.getOrPut(obj) { TreeMap() }
+        val currentState = if (map.isEmpty()) null else map.interpolated(now)
+        // Clear all future states
+        map.clear()
+        if (currentState != null) map[now] = currentState
+        map[now + delta] = state(currentState)
+    }
+
+    fun immediate(obj: O, state: S, minimumTime: Instant = clock.instant()) {
+        val map = objects.getOrPut(obj) { TreeMap() }
+        map.clear()
+        map[minimumTime] = state
     }
 }
 
