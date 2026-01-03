@@ -19,7 +19,7 @@ class CardDisplayModel(
     private var lastPaint: Instant = clock.instant().minusSeconds(1)
     private val back: CardBacks get() = getBack()
     private val animation = Animation<Card, State>(clock) { left, delta, right ->
-        val t = cosh(delta * 2) / cosh(2.0)
+        val t = sin(delta * PI/2)
         left * (1.0 - t) + right * t
     }
 
@@ -53,7 +53,7 @@ class CardDisplayModel(
 
         val transform = affineTransform {
             translate(position.x, position.y + images.cardHeight * (1 - abs(.5 - flip) * 2))
-            scale(1.0, abs(flip - .5) * 2)
+            scale(1.0, abs(cos(flip * PI)))
         }
         if (isSelected(card)) {
             g.paint = Color.YELLOW
@@ -84,7 +84,7 @@ class CardDisplayModel(
 
     operator fun get(card: Card): NextState = NextState(card)
 
-    inner class NextState(val card: Card, var delta: Duration = Duration.ofMillis(125)) {
+    inner class NextState(val card: Card, var delta: Duration = Duration.ofMillis(200)) {
         fun setTarget(position: Point2D, visible: Boolean, z: Int) {
             val state = State(position, if (visible) 1f else 0f, z.toFloat())
             if (!animationsEnabled()) {
