@@ -182,7 +182,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
         solitaireGame.currentState.stock.forEachIndexed { index, card ->
             displayModel[card].setTarget(stockStartPoint.apply {
                 y += index * stockFanHeight
-            }, false, index)
+            }, false, index + 50)
         }
         val hiddenCards = solitaireGame.currentState.tableauHidden
         val visibleCards = solitaireGame.currentState.tableauVisible
