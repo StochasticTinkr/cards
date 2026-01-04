@@ -28,8 +28,12 @@ class CardDisplayModel(
         val flip: Float,
         val z: Float,
     ) {
-        operator fun times(delta: Double) = State(position * delta, flip * delta.toFloat(), z)
-        operator fun plus(state: State): State = State(position + state.position, flip + state.flip, max(z, state.z))
+        operator fun times(delta: Double) = State(
+            position * delta, flip * delta.toFloat(),
+            if (delta > .5f) z else 0f
+        )
+
+        operator fun plus(state: State): State = State(position + state.position, flip + state.flip, z + state.z)
     }
 
     fun drawAll(g: Graphics2D) {

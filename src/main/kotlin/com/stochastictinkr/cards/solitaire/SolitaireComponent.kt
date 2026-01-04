@@ -177,30 +177,36 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             }
         }
         solitaireGame.currentState.waste.forEachIndexed { index, card ->
-            displayModel[card].setTarget(wastePosition, true, index)
+            displayModel[card].setTarget(wastePosition, true, index + 50)
         }
-        solitaireGame.currentState.stock.forEachIndexed { index, card ->
-            displayModel[card].setTarget(stockStartPoint.apply {
-                y += index * stockFanHeight
-            }, false, index + 50)
+        solitaireGame.currentState.stock.run {
+            forEachIndexed { index, card ->
+                displayModel[card].setTarget(stockStartPoint.apply {
+                    y += index * stockFanHeight
+                }, false, index - size + 50)
+            }
         }
         val hiddenCards = solitaireGame.currentState.tableauHidden
         val visibleCards = solitaireGame.currentState.tableauVisible
         repeat(7) { tableauNumber ->
-            hiddenCards[tableauNumber].forEachIndexed { index, card ->
-                val position = point(
-                    tableauX + (cardSize.width + tableauMargin) * tableauNumber,
-                    tableauY + index * tableauHiddenCardFanHeight
-                )
-                displayModel[card].setTarget(position, false, index - 50)
+            hiddenCards[tableauNumber].run {
+                forEachIndexed { index, card ->
+                    val position = point(
+                        tableauX + (cardSize.width + tableauMargin) * tableauNumber,
+                        tableauY + index * tableauHiddenCardFanHeight
+                    )
+                    displayModel[card].setTarget(position, false, index - 50)
+                }
             }
             val startY = tableauY + hiddenCards[tableauNumber].size * tableauHiddenCardFanHeight
-            visibleCards[tableauNumber].forEachIndexed { index, card ->
-                val position = point(
-                    tableauX + (cardSize.width + tableauMargin) * tableauNumber,
-                    startY + index * tableauVisibleCardFanHeight
-                )
-                displayModel[card].setTarget(position, true, index)
+            visibleCards[tableauNumber].run {
+                forEachIndexed { index, card ->
+                    val position = point(
+                        tableauX + (cardSize.width + tableauMargin) * tableauNumber,
+                        startY + index * tableauVisibleCardFanHeight
+                    )
+                    displayModel[card].setTarget(position, true, 1 + index * 2 - size)
+                }
             }
         }
 
