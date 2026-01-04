@@ -1,8 +1,7 @@
 package com.stochastictinkr.cards.solitaire
 
-import com.stochastictinkr.cards.standard.Card
-import com.stochastictinkr.cards.standard.StandardDeck
-import kotlin.random.Random
+import com.stochastictinkr.cards.standard.*
+import kotlin.random.*
 
 class SolitaireGame {
     // Indicates whether the most recent state change was due to undo/redo history navigation
@@ -13,8 +12,10 @@ class SolitaireGame {
     private var state: SolitaireState = newGameState()
         set(value) {
             val oldState = field
-            field = value
-            listeners.stateChanged(oldState, value)
+            if (oldState != value) {
+                field = value
+                listeners.stateChanged(oldState, value)
+            }
         }
     private val undoHistory = mutableListOf<SolitaireState>()
     private val redoHistory = mutableListOf<SolitaireState>()
@@ -125,7 +126,9 @@ class SolitaireGame {
     fun autoFinishStep(): Boolean {
         // Find candidates from tableau (top visible of each pile)
         val state = currentState
+
         data class Candidate(val source: CardSource, val receivable: List<Card>, val rankOrdinal: Int)
+
         val candidates = mutableListOf<Candidate>()
         // Tableau candidates
         state.tableauVisible.forEachIndexed { idx, visible ->

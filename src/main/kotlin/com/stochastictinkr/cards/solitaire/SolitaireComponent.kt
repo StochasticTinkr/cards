@@ -172,7 +172,7 @@ class SolitaireComponent(val solitaireGame: SolitaireGame) : JComponent() {
             solitaireGame.currentState.foundations[suit]?.let { rank ->
                 displayModel[Card(suit, rank)].setTarget(position, true, 100)
                 rank.previous?.let { previous ->
-                    displayModel[Card(suit, previous)].setTarget(position, true, 99)
+                    displayModel[Card(suit, previous)].setTarget(position, true, 99 - (13 - previous.ordinal))
                 }
             }
         }

@@ -19,7 +19,7 @@ class CardDisplayModel(
     private var lastPaint: Instant = clock.instant().minusSeconds(1)
     private val back: CardBacks get() = getBack()
     private val animation = Animation<Card, State>(clock) { left, delta, right ->
-        val t = sin(delta * PI/2)
+        val t = sin(delta * PI / 2)
         left * (1.0 - t) + right * t
     }
 
@@ -28,8 +28,8 @@ class CardDisplayModel(
         val flip: Float,
         val z: Float,
     ) {
-        operator fun times(delta: Double) = State(position * delta, flip * delta.toFloat(), z * delta.toFloat())
-        operator fun plus(state: State): State = State(position + state.position, flip + state.flip, z + state.z)
+        operator fun times(delta: Double) = State(position * delta, flip * delta.toFloat(), z)
+        operator fun plus(state: State): State = State(position + state.position, flip + state.flip, max(z, state.z))
     }
 
     fun drawAll(g: Graphics2D) {
