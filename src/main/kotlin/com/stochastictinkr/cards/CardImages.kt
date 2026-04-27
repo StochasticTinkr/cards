@@ -11,7 +11,7 @@ import kotlin.math.*
  * Card images are loaded from SVG files and rendered to `BufferedImage` objects.
  */
 class CardImages(
-    private val svgLoader: SvgLoader = BatikSvgLoader,
+    private val svgLoader: SvgLoader = JsvgLoader(),
 ) {
     private val cardPainters = StandardDeck.cards.associateWith { card ->
         createImagePainter(card.imageFile)

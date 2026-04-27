@@ -22,8 +22,7 @@ repositories {
 
 dependencies {
     implementation("com.stochastictinkr:skywing:0.1-SNAPSHOT")
-    implementation("org.apache.xmlgraphics:batik-dom:1.19")
-    implementation("org.apache.xmlgraphics:batik-swing:1.19")
+    implementation("com.github.weisj:jsvg:2.0.0")
     testImplementation(kotlin("test"))
 }
 
@@ -50,8 +49,7 @@ runtime {
         "java.desktop",
         "java.prefs",
         "java.xml",
-        "jdk.xml.dom",
-        "java.datatransfer"
+        "java.logging",
     )
 
     launcher {

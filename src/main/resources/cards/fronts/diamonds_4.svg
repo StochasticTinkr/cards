@@ -1,190 +1,22 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="234"
-   height="333.00003"
-   id="svg2"
-   version="1.1"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
-   sodipodi:docname="diamonds_4.svg"
-   inkscape:export-filename="C:\Users\fowle\OneDrive\Projects\Playing-Cards\fronts\png-096-dpi\diamonds_4.png"
-   inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96">
-  <title
-     id="title890">Four of Diamonds Playing Card</title>
-  <defs
-     id="defs4" />
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="2.1916676"
-     inkscape:cx="79.965437"
-     inkscape:cy="169.61814"
-     inkscape:document-units="px"
-     inkscape:current-layer="layer1"
-     showgrid="false"
-     inkscape:showpageshadow="false"
-     showguides="true"
-     inkscape:guide-bbox="true"
-     inkscape:snap-global="true"
-     inkscape:window-width="1456"
-     inkscape:window-height="976"
-     inkscape:window-x="510"
-     inkscape:window-y="8"
-     inkscape:window-maximized="0"
-     showborder="false"
-     fit-margin-top="0"
-     fit-margin-left="0"
-     fit-margin-right="0"
-     fit-margin-bottom="0">
-    <inkscape:grid
-       type="xygrid"
-       id="grid3767"
-       empspacing="5"
-       visible="true"
-       enabled="true"
-       snapvisiblegridlinesonly="true"
-       originx="0"
-       originy="5.1666068e-06" />
-  </sodipodi:namedview>
-  <metadata
-     id="metadata7">
-    <rdf:RDF>
-      <cc:Work
-         rdf:about="">
-        <dc:format>image/svg+xml</dc:format>
-        <dc:type
-           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title>Four of Diamonds Playing Card</dc:title>
-        <dc:date>2020-05-05</dc:date>
-        <dc:creator>
-          <cc:Agent>
-            <dc:title>Daniel S. Fowler</dc:title>
-          </cc:Agent>
-        </dc:creator>
-        <dc:rights>
-          <cc:Agent>
-            <dc:title>Public Domain</dc:title>
-          </cc:Agent>
-        </dc:rights>
-        <dc:publisher>
-          <cc:Agent>
-            <dc:title>https://tekeye.uk</dc:title>
-          </cc:Agent>
-        </dc:publisher>
-        <dc:language>en-GB</dc:language>
-        <dc:subject>
-          <rdf:Bag>
-            <rdf:li>Four; diamonds; playing; card; white; red;</rdf:li>
-          </rdf:Bag>
-        </dc:subject>
-        <dc:description>A four of diamonds playing card.</dc:description>
-      </cc:Work>
-    </rdf:RDF>
-  </metadata>
-  <g
-     inkscape:label="Layer 1"
-     inkscape:groupmode="layer"
-     id="layer1"
-     transform="translate(0,-719.36216)">
-    <g
-       id="g912">
-      <rect
-         rx="8.9191856"
-         ry="8.9457436"
-         y="719.74011"
-         x="0.37795275"
-         height="332.24411"
-         width="233.24409"
-         id="rect4266"
-         style="fill:#ffffff;fill-opacity:1;stroke:#808080;stroke-width:0.75590551;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-      <g
-         transform="matrix(0.07348588,0,0,0.07370838,-248.01731,933.60062)"
-         id="g4233"
-         style="fill:none;stroke:#000000;stroke-width:3.18132639;stroke-opacity:1" />
-      <g
-         clip-path="none"
-         style="fill:none;stroke:#000000;stroke-width:3.18132639;stroke-opacity:1"
-         id="g4211"
-         transform="matrix(0.07348588,0,0,0.07370838,-248.01728,933.60062)" />
-      <g
-         transform="matrix(0.07348588,0,0,0.07370838,-248.01731,933.60062)"
-         id="g4227"
-         style="fill:none;stroke:#000000;stroke-width:3.18132639;stroke-opacity:1" />
-      <path
-         inkscape:export-ydpi="95.969437"
-         inkscape:export-xdpi="95.969437"
-         inkscape:export-filename="D:\DAN\Documents\Projects\Playing Cards\test.png"
-         inkscape:connector-curvature="0"
-         id="path4884-1"
-         d="M 58.629672,814.07624 86.87338,785.73971 58.629672,757.40317 30.385965,785.73971 Z"
-         style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1" />
-      <path
-         inkscape:export-ydpi="95.969437"
-         inkscape:export-xdpi="95.969437"
-         inkscape:export-filename="D:\DAN\Documents\Projects\Playing Cards\test.png"
-         inkscape:connector-curvature="0"
-         id="path4884-1-4"
-         d="M 58.629676,1014.3212 86.87338,985.98462 58.629676,957.64809 30.385965,985.98462 Z"
-         style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1" />
-      <path
-         inkscape:export-ydpi="95.969437"
-         inkscape:export-xdpi="95.969437"
-         inkscape:export-filename="D:\DAN\Documents\Projects\Playing Cards\test.png"
-         inkscape:connector-curvature="0"
-         id="path4884-1-40"
-         d="M 175.37033,814.07623 203.61404,785.7397 175.37033,757.40316 147.12662,785.7397 Z"
-         style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1" />
-      <path
-         inkscape:export-ydpi="95.969437"
-         inkscape:export-xdpi="95.969437"
-         inkscape:export-filename="D:\DAN\Documents\Projects\Playing Cards\test.png"
-         inkscape:connector-curvature="0"
-         id="path4884-1-4-9"
-         d="m 175.37033,1014.3212 28.24371,-28.33659 -28.24371,-28.33654 -28.24371,28.33654 z"
-         style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1" />
-      <path
-         inkscape:connector-curvature="0"
-         id="path4884-1-4-5-3"
-         d="m 17.205569,780.7021 9.414569,-9.44551 -9.414569,-9.44552 -9.4145688,9.44552 z"
-         style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1" />
-      <path
-         inkscape:connector-curvature="0"
-         id="path4884-1-4-5-3-5"
-         d="m 216.79443,991.02224 9.41457,9.44556 -9.41457,9.4455 -9.41457,-9.4455 z"
-         style="fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1" />
-      <g
-         id="text3755-5"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.77201176px;line-height:0%;font-family:'Levenim MT';-inkscape-font-specification:'Sans Bold';letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1"
-         transform="scale(0.9367271,1.0675468)"
-         aria-label="4">
-        <path
-           id="path892"
-           style="fill:#ff0000;font-size:37.69855499px;line-height:1.25;stroke-width:1"
-           d="m 28.418244,706.77169 q 0,0.38656 -0.14726,0.75471 -0.331335,0.18407 -0.699485,0.18407 H 15.753885 q -1.362154,0 -1.362154,-1.38056 0,-0.22089 0.03682,-0.77311 0.03681,-0.55223 0.03681,-0.84675 0,-0.64426 0.276112,-0.82834 0.202483,-0.12885 0.901967,-0.12885 h 4.601875 v -2.83475 H 9.9187087 q -1.6014522,0 -1.6014522,-1.49101 0,-0.2577 0.055223,-0.93878 0.055222,-0.69949 0.055222,-1.10445 0,-0.62586 0.7178924,-1.56464 l 10.6395332,-13.9897 q 0.497003,-0.66267 1.25171,-0.66267 h 2.42979 q 0.865152,0 0.865152,0.95719 v 15.02052 q 0.66267,0 1.509415,-0.0368 0.865153,-0.0368 1.10445,-0.0368 0.994005,0 1.233302,0.497 0.239298,0.4786 0.239298,2.39298 0,0.34974 -0.05522,0.53382 -0.110445,0.42337 -0.846745,0.42337 h -3.184497 v 2.83475 q 0.681078,0 1.54623,-0.0368 0.865153,-0.0368 1.086042,-0.0368 1.049228,0 1.270118,0.53382 0.184075,0.44178 0.184075,2.55864 z m -8.099299,-19.69602 q -1.012413,1.54623 -7.473444,10.0689 h 7.399814 q 0,-0.9756 -0.03682,-3.35016 -0.05522,-2.15368 -0.03682,-3.36858 0.01841,-1.84075 0.14726,-3.35016 z" />
-      </g>
-      <g
-         id="text3755-2-28"
-         style="fill:#ff0000;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.77201176px;line-height:0%;font-family:'Levenim MT';-inkscape-font-specification:'Sans Bold';letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:1"
-         transform="scale(-0.9367271,-1.0675468)"
-         aria-label="4">
-        <path
-           id="path895"
-           style="font-size:37.69855499px;line-height:1.25;stroke-width:1"
-           d="m -221.38771,-952.85044 q 0,0.38656 -0.14726,0.75471 -0.33134,0.18407 -0.69949,0.18407 h -11.81761 q -1.36215,0 -1.36215,-1.38056 0,-0.22089 0.0368,-0.77311 0.0368,-0.55223 0.0368,-0.84675 0,-0.64426 0.27611,-0.82834 0.20248,-0.12885 0.90197,-0.12885 h 4.60187 v -2.83475 h -10.32661 q -1.60145,0 -1.60145,-1.49101 0,-0.25771 0.0552,-0.93878 0.0552,-0.69949 0.0552,-1.10445 0,-0.62586 0.71789,-1.56464 l 10.63953,-13.9897 q 0.49701,-0.66267 1.25171,-0.66267 h 2.42979 q 0.86515,0 0.86515,0.95719 v 15.02052 q 0.66267,0 1.50942,-0.0368 0.86515,-0.0368 1.10445,-0.0368 0.994,0 1.2333,0.497 0.2393,0.4786 0.2393,2.39298 0,0.34974 -0.0552,0.53381 -0.11045,0.42338 -0.84675,0.42338 h -3.1845 v 2.83475 q 0.68108,0 1.54623,-0.0368 0.86516,-0.0368 1.08605,-0.0368 1.04922,0 1.27011,0.53382 0.18408,0.44178 0.18408,2.55864 z m -8.0993,-19.69602 q -1.01241,1.54623 -7.47344,10.0689 h 7.39981 q 0,-0.9756 -0.0368,-3.35017 -0.0552,-2.15367 -0.0368,-3.36857 0.0184,-1.84075 0.14726,-3.35016 z" />
-      </g>
+<svg width="234" height="333.00003" xmlns="http://www.w3.org/2000/svg">
+    <g id="layer1" transform="matrix(1 0 0 1 0 -719.3622)">
+        <g id="g912">
+            <path id="rect4266" fill="#ffffff" stroke="#808080" stroke-width="0.7559055" d="M 9.297138 719.7401 L 224.70288 719.7401 C 229.6288 719.7401 233.62206 723.74524 233.62206 728.68585 L 233.62206 1043.0385 C 233.62207 1045.411 232.68237 1047.6864 231.0097 1049.3641 C 229.33702 1051.0417 227.06839 1051.9843 224.70288 1051.9843 L 9.297138 1051.9843 C 6.9316134 1051.9843 4.662975 1051.0417 2.9903018 1049.3641 C 1.3176281 1047.6864 0.3779376 1045.411 0.37795275 1043.0385 L 0.37795275 728.68585 C 0.37795484 723.74524 4.3712096 719.7401 9.297138 719.7401 Z"/>
+            <g id="g4233" transform="matrix(0.07348588 0 0 0.07370838 -248.0173 933.60065)"/>
+            <g id="g4211" transform="matrix(0.07348588 0 0 0.07370838 -248.01726 933.60065)"/>
+            <g id="g4227" transform="matrix(0.07348588 0 0 0.07370838 -248.0173 933.60065)"/>
+            <path id="path4884-1" fill="#ff0000" stroke="none" d="M 58.629673 814.07623 L 86.87338 785.7397 L 58.629673 757.40326 L 30.385965 785.7397 Z"/>
+            <path id="path4884-1-4" fill="#ff0000" stroke="none" d="M 58.629677 1014.3212 L 86.87338 985.9846 L 58.629677 957.6481 L 30.385965 985.9846 Z"/>
+            <path id="path4884-1-40" fill="#ff0000" stroke="none" d="M 175.37032 814.07623 L 203.61404 785.7397 L 175.37032 757.40314 L 147.12662 785.7397 Z"/>
+            <path id="path4884-1-4-9" fill="#ff0000" stroke="none" d="M 175.37032 1014.3212 L 203.61404 985.9846 L 175.37032 957.6481 L 147.12662 985.9846 Z"/>
+            <path id="path4884-1-4-5-3" fill="#ff0000" stroke="none" d="M 17.205568 780.7021 L 26.620136 771.2566 L 17.205568 761.8111 L 7.7910004 771.2566 Z"/>
+            <path id="path4884-1-4-5-3-5" fill="#ff0000" stroke="none" d="M 216.79443 991.0222 L 226.209 1000.4677 L 216.79443 1009.9134 L 207.37987 1000.4677 Z"/>
+            <g id="text3755-5" transform="matrix(0.9367271 0 0 1.0675468 0 0)">
+                <path id="path892" fill="#ff0000" stroke="none" d="M 28.418243 706.77167 Q 28.418243 707.15826 28.270983 707.5264 Q 27.939651 707.7105 27.571499 707.7105 L 15.753885 707.7105 Q 14.391731 707.7105 14.391731 706.3299 Q 14.391731 706.109 14.428551 705.5568 Q 14.465361 705.0046 14.465361 704.71 Q 14.465361 704.0658 14.741473 703.8817 Q 14.943956 703.75287 15.64344 703.75287 L 20.245316 703.75287 L 20.245316 700.9181 L 9.918709 700.9181 Q 8.317257 700.9181 8.317257 699.4271 Q 8.317257 699.1693 8.372479 698.48834 Q 8.427702 697.7888 8.427702 697.3838 Q 8.427702 696.75806 9.145594 695.8192 L 19.785128 681.8295 Q 20.28213 681.1669 21.036837 681.1669 L 23.466627 681.1669 Q 24.33178 681.1669 24.33178 682.124 L 24.33178 697.1446 Q 24.99445 697.1446 25.841192 697.10785 Q 26.706348 697.071 26.945644 697.071 Q 27.939651 697.071 28.178947 697.568 Q 28.418243 698.0466 28.418243 699.96094 Q 28.418243 700.31067 28.363024 700.49475 Q 28.25258 700.91815 27.516281 700.91815 L 24.331781 700.91815 L 24.331781 703.75287 Q 25.01286 703.75287 25.878012 703.71606 Q 26.743166 703.67926 26.964054 703.67926 Q 28.013285 703.67926 28.234173 704.21313 Q 28.418247 704.65485 28.418247 706.7718 Z M 20.318945 687.0757 Q 19.306532 688.6219 12.845502 697.1446 L 20.245316 697.1446 Q 20.245316 696.16895 20.208494 693.79443 Q 20.153275 691.64075 20.171675 690.42584 Q 20.190084 688.58514 20.318935 687.0757 Z"/>
+            </g>
+            <g id="text3755-2-28" transform="matrix(-0.9367271 0 0 -1.0675468 0 0)">
+                <path id="path895" fill="#ff0000" stroke="none" d="M -221.38771 -952.8504 Q -221.38771 -952.46387 -221.53497 -952.0957 Q -221.86632 -951.9117 -222.23447 -951.9117 L -234.05205 -951.9117 Q -235.41422 -951.9117 -235.41422 -953.29224 Q -235.41422 -953.51306 -235.37741 -954.0653 Q -235.34062 -954.61755 -235.34062 -954.9121 Q -235.34062 -955.55634 -235.0645 -955.7404 Q -234.86205 -955.86926 -234.16255 -955.86926 L -229.56067 -955.86926 L -229.56067 -958.70404 L -239.88728 -958.70404 Q -241.48874 -958.70404 -241.48874 -960.19495 Q -241.48874 -960.45276 -241.43353 -961.1338 Q -241.37833 -961.8333 -241.37833 -962.2383 Q -241.37833 -962.8642 -240.66045 -963.8029 L -230.02089 -977.7926 Q -229.52388 -978.45526 -228.7692 -978.45526 L -226.33942 -978.45526 Q -225.47426 -978.45526 -225.47426 -977.4981 L -225.47426 -962.4775 Q -224.81158 -962.4775 -223.96483 -962.51434 Q -223.09969 -962.55115 -222.8604 -962.55115 Q -221.8664 -962.55115 -221.62709 -962.05414 Q -221.3878 -961.57556 -221.3878 -959.6612 Q -221.3878 -959.31146 -221.443 -959.1274 Q -221.55344 -958.7039 -222.28973 -958.7039 L -225.47426 -958.7039 L -225.47426 -955.86926 Q -224.79317 -955.86926 -223.92801 -955.90607 Q -223.06285 -955.9428 -222.84196 -955.9428 Q -221.79276 -955.9428 -221.57185 -955.40894 Q -221.38777 -954.9672 -221.38777 -952.8504 Z M -229.48701 -972.54645 Q -230.49944 -971.00024 -236.96043 -962.4775 L -229.56065 -962.4775 Q -229.56065 -963.4532 -229.59744 -965.82776 Q -229.65265 -967.9814 -229.63425 -969.1962 Q -229.61584 -971.0371 -229.48698 -972.54645 Z"/>
+            </g>
+        </g>
     </g>
-  </g>
 </svg>
