@@ -2,7 +2,6 @@ package com.stochastictinkr.cards
 
 import com.stochastictinkr.cards.standard.*
 import com.stochastictinkr.svg.*
-import org.apache.batik.gvt.*
 import java.awt.image.*
 import java.io.*
 import kotlin.math.*
@@ -11,7 +10,9 @@ import kotlin.math.*
  * Manages loading and caching of card images for both fronts and backs of the standard deck.
  * Card images are loaded from SVG files and rendered to `BufferedImage` objects.
  */
-class CardImages {
+class CardImages(
+    private val svgLoader: SvgLoader = BatikSvgLoader,
+) {
     private val cardPainters = StandardDeck.cards.associateWith { card ->
         createImagePainter(card.imageFile)
     }
@@ -78,9 +79,11 @@ class CardImages {
         }
     }
 
-    private fun createImagePainter(resourceName: String): GraphicsNode {
-        val resource = {}.javaClass.classLoader.getResource(resourceName) ?: throw FileNotFoundException(resourceName)
-        return loadSvgGraphicsNode(resource.toExternalForm(), resource.openStream())
+    private fun createImagePainter(resourceName: String): SvgPainter {
+        val resource = javaClass.classLoader.getResource(resourceName) ?: throw FileNotFoundException(resourceName)
+        resource.openStream().use { stream ->
+            return svgLoader.loadSvg(stream)
+        }
     }
 
     private val Card.imageFile get() = "cards/fronts/${suit.suitName}_${rank.rankName}.svg"
