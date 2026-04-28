@@ -185,25 +185,29 @@
        sodipodi:nodetypes="csssssssscssssssssc"
        inkscape:transform-center-x="78.569004"
        inkscape:transform-center-y="-71.513392" />
-    <g
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.77201176px;line-height:0%;font-family:'Levenim MT';-inkscape-font-specification:'Sans Bold';letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0.99999994"
+       x="5.3997955"
+       y="747.79761"
        id="text3755-0"
-       style="fill:#ff0000;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.77201176px;line-height:0%;font-family:'Levenim MT';-inkscape-font-specification:'Sans Bold';letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0.99999994"
-       transform="scale(0.99029285,1.0098023)"
-       aria-label="6">
-      <path
-         id="path897"
-         style="font-size:39.17512512px;line-height:1.25;stroke-width:0.99999994"
-         d="m 26.881078,738.99851 q 0,4.24652 -2.467574,6.71409 -2.448446,2.46758 -6.694968,2.46758 -9.8511667,0 -9.8511667,-13.61948 0,-6.00634 2.1232612,-9.7364 2.6397305,-4.7056 8.1869895,-4.7056 3.213584,0 5.336845,1.31986 2.544088,1.56854 2.544088,4.59084 0,0.6695 -0.937296,0.6695 h -2.831014 q -0.554726,0 -0.937296,-0.63124 -0.554726,-0.9373 -0.87991,-1.2051 -0.784268,-0.63124 -2.295417,-0.63124 -2.544088,0 -3.959596,2.37193 -1.109451,1.91285 -1.243351,4.70561 2.238032,-1.77895 5.355974,-1.77895 3.959596,0 6.312398,2.79276 2.238033,2.63973 2.238033,6.67584 z m -4.992534,-0.11477 q 0,-2.18065 -1.090323,-3.59616 -1.205094,-1.56853 -3.328355,-1.56853 -2.104133,0 -3.290099,1.56853 -1.071194,1.41551 -1.071194,3.59616 0,2.085 1.12858,3.53876 1.224223,1.58767 3.251841,1.58767 2.065876,0 3.290099,-1.56854 1.109451,-1.43463 1.109451,-3.55789 z" />
-    </g>
-    <g
+       transform="scale(0.99029285,1.0098023)"><tspan
+         sodipodi:role="line"
+         id="tspan3757-9"
+         x="5.3997955"
+         y="747.79761"
+         style="font-size:39.17512512px;line-height:1.25;stroke-width:0.99999994">6</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.77201176px;line-height:0%;font-family:'Levenim MT';-inkscape-font-specification:'Sans Bold';letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0.99999994"
+       x="-230.89395"
+       y="-1006.7283"
        id="text3755-2-2"
-       style="fill:#ff0000;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:3.77201176px;line-height:0%;font-family:'Levenim MT';-inkscape-font-specification:'Sans Bold';letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;stroke-width:0.99999994"
-       transform="scale(-0.99029285,-1.0098023)"
-       aria-label="6">
-      <path
-         id="path900"
-         style="font-size:39.17512512px;line-height:1.25;stroke-width:0.99999994"
-         d="m -209.41268,-1015.5274 q 0,4.2466 -2.46758,6.7141 -2.44844,2.4676 -6.69497,2.4676 -9.85116,0 -9.85116,-13.6195 0,-6.0063 2.12326,-9.7364 2.63973,-4.7056 8.18699,-4.7056 3.21358,0 5.33684,1.3199 2.54409,1.5685 2.54409,4.5908 0,0.6695 -0.93729,0.6695 h -2.83102 q -0.55473,0 -0.9373,-0.6312 -0.55472,-0.9373 -0.87991,-1.2051 -0.78426,-0.6313 -2.29541,-0.6313 -2.54409,0 -3.9596,2.372 -1.10945,1.9128 -1.24335,4.7056 2.23803,-1.779 5.35598,-1.779 3.95959,0 6.31239,2.7928 2.23804,2.6397 2.23804,6.6758 z m -4.99254,-0.1147 q 0,-2.1807 -1.09032,-3.5962 -1.2051,-1.5685 -3.32836,-1.5685 -2.10413,0 -3.29009,1.5685 -1.0712,1.4155 -1.0712,3.5962 0,2.085 1.12858,3.5387 1.22422,1.5877 3.25184,1.5877 2.06588,0 3.2901,-1.5685 1.10945,-1.4347 1.10945,-3.5579 z" />
-    </g>
+       transform="scale(-0.99029285,-1.0098023)"><tspan
+         sodipodi:role="line"
+         id="tspan3757-4-4"
+         x="-230.89395"
+         y="-1006.7283"
+         style="font-size:39.17512512px;line-height:1.25;stroke-width:0.99999994">6</tspan></text>
   </g>
 </svg>
